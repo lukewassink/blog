@@ -1,0 +1,4 @@
+baseURL = 'https://lukewassink.com'
+locale = 'en-us'
+title = 'Luke Wassink website'
+theme = 'coder'

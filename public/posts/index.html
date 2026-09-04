@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<head>
   <meta charset="utf-8">
 <meta name="viewport" content="width=device-width">
 <title>Posts | Luke Wassink website</title>
 
-      <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/main.30bbabcf0c588c3c13cbe24430d7aa6226315a94faf09d877dd441b3ebf03774.css" integrity="sha256-MLurzwxYjDwTy&#43;JEMNeqYiYxWpT68J2HfdRBs&#43;vwN3Q=" crossorigin="anonymous">
 
 
-      <script src="/js/main.js"></script>
+        <script src="/js/main.23cd0c7d837263b9eaeb96ee2d9ccfa2969daa3fa00fa1c1fe8701a9b87251a1.js" integrity="sha256-I80MfYNyY7nq65buLZzPopadqj&#43;gD6HB/ocBqbhyUaE=" crossorigin="anonymous"></script>
 
 
 </head>
@@ -34,51 +34,6 @@
   <h1>Posts</h1>
   <p>Thoughts on current projects and tech topics that interest me.</p>
 
-  
-    <section>
-      <h2><a href="/posts/matrix-multiplication-optimization/">Matrix Multiplication Optimization</a></h2>
-      <h1 id="optimizing-matrix-multiplication">Optimizing Matrix Multiplication</h1>
-<p>Outline:</p>
-<ul>
-<li>Intro: optimize matrix multiplication
-<ul>
-<li>Learn benchmarking (JMH, flame graphs)</li>
-<li>Using scala, but not functional</li>
-<li>Code on GitHub</li>
-</ul>
-</li>
-<li>Naive</li>
-<li>Flat</li>
-<li>Transpose</li>
-<li>Accumulator</li>
-<li>Blocks
-<ul>
-<li>slow</li>
-<li>flame graph</li>
-<li>nested forEach</li>
-<li>fast</li>
-</ul>
-</li>
-<li>Parallel
-<ul>
-<li>block size</li>
-<li>thread count</li>
-</ul>
-</li>
-<li>final table</li>
-</ul>
-<p>Matrix multiplication is a great test case to understand performance
-optimization.
-The underlying algorithm is fairly simple, and it benefits measurably from some
-classic optimizations like:</p>
-<ul>
-<li>reducing array accesses</li>
-<li>sequential memory access</li>
-<li>cache locality</li>
-<li>parallelization</li>
-</ul>
-<p>Read this post if you want to:</p>
-    </section>
   
 
   </main>

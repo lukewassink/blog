@@ -1,8 +1,14 @@
 baseURL = 'https://lukewassink.com'
 locale = 'en-us'
 title = 'Luke Wassink'
-theme = 'hugo-coder'
 defaultcontentlanguage = "en"
+
+[module]
+  [[module.imports]]
+    path = 'github.com/luizdepra/hugo-coder'
+  [module.hugoVersion]
+    extended = false
+    min = '0.146.0'
 
 [pagination]
 pagerSize = 20
@@ -58,7 +64,3 @@ pagerSize = 20
     pageRef = '/about'
     weight = 2
 
-[module]
-  [module.hugoVersion]
-    extended = false
-    min = '0.146.0'

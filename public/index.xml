@@ -10,8 +10,22 @@
 		
 		
 		
-			<lastBuildDate></lastBuildDate>
+			<lastBuildDate>Fri, 04 Sep 2026 13:00:32 -0500</lastBuildDate>
 		
 			<atom:link href="https://lukewassink.com/index.xml" rel="self" type="application/rss+xml" />
+			<item>
+				<title>About</title>
+				<link>https://lukewassink.com/about/</link>
+				<pubDate>Fri, 04 Sep 2026 13:00:32 -0500</pubDate>
+				<guid>https://lukewassink.com/about/</guid>
+				<description>&lt;p&gt;I am a math PhD turned backend developer.&#xA;I worked at Google for 7 years.&#xA;Now I&amp;rsquo;m spending some time at home with my kids!&#xA;I occasionally write about things that interest me like:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Distributed systems&lt;/li&gt;&#xA;&lt;li&gt;Functional programming&lt;/li&gt;&#xA;&lt;li&gt;Computer performance&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
+			</item>
+			<item>
+				<title>Matrix Multiplication Optimization</title>
+				<link>https://lukewassink.com/posts/matrix-multiplication-optimization/</link>
+				<pubDate>Thu, 03 Sep 2026 16:58:27 -0500</pubDate>
+				<guid>https://lukewassink.com/posts/matrix-multiplication-optimization/</guid>
+				<description>&lt;h1 id=&#34;optimizing-matrix-multiplication&#34;&gt;&#xA;  Optimizing Matrix Multiplication&#xA;  &lt;a class=&#34;heading-link&#34; href=&#34;#optimizing-matrix-multiplication&#34;&gt;&#xA;    &lt;i class=&#34;fa-solid fa-link&#34; aria-hidden=&#34;true&#34; title=&#34;Link to heading&#34;&gt;&lt;/i&gt;&#xA;    &lt;span class=&#34;sr-only&#34;&gt;Link to heading&lt;/span&gt;&#xA;  &lt;/a&gt;&#xA;&lt;/h1&gt;&#xA;&lt;p&gt;Outline:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Intro: optimize matrix multiplication&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Learn benchmarking (JMH, flame graphs)&lt;/li&gt;&#xA;&lt;li&gt;Using scala, but not functional&lt;/li&gt;&#xA;&lt;li&gt;Code on GitHub&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Naive&lt;/li&gt;&#xA;&lt;li&gt;Flat&lt;/li&gt;&#xA;&lt;li&gt;Transpose&lt;/li&gt;&#xA;&lt;li&gt;Accumulator&lt;/li&gt;&#xA;&lt;li&gt;Blocks&#xA;&lt;ul&gt;&#xA;&lt;li&gt;slow&lt;/li&gt;&#xA;&lt;li&gt;flame graph&lt;/li&gt;&#xA;&lt;li&gt;nested forEach&lt;/li&gt;&#xA;&lt;li&gt;fast&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Parallel&#xA;&lt;ul&gt;&#xA;&lt;li&gt;block size&lt;/li&gt;&#xA;&lt;li&gt;thread count&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;final table&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;Matrix multiplication is a great test case to understand performance&#xA;optimization.&#xA;The underlying algorithm is fairly simple, and it benefits measurably from some&#xA;classic optimizations like:&lt;/p&gt;</description>
+			</item>
 	</channel>
 </rss>

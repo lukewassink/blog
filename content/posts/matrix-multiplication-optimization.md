@@ -1,6 +1,6 @@
 +++
 date = '2026-09-03T16:58:27-05:00'
-draft = true
+draft = false
 title = 'Matrix Multiplication Optimization'
 +++
 

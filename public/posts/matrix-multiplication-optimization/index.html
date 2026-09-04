@@ -25,7 +25,7 @@ Outline:
 Intro: optimize matrix multiplication
 
 Learn benchmarking (JMH, flame graphs)
-Using scala, but not functional
+Using Scala, but not functional
 Code on GitHub
 
 
@@ -60,13 +60,13 @@ classic optimizations like:">
 	<meta name="twitter:card" content="summary">
 	<meta name="twitter:title" content="Matrix Multiplication Optimization">
 	<meta name="twitter:description" content="Optimizing Matrix Multiplication Link to heading Outline:
-Intro: optimize matrix multiplication Learn benchmarking (JMH, flame graphs) Using scala, but not functional Code on GitHub Naive Flat Transpose Accumulator Blocks slow flame graph nested forEach fast Parallel block size thread count final table Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits measurably from some classic optimizations like:">
+Intro: optimize matrix multiplication Learn benchmarking (JMH, flame graphs) Using Scala, but not functional Code on GitHub Naive Flat Transpose Accumulator Blocks slow flame graph nested forEach fast Parallel block size thread count final table Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits measurably from some classic optimizations like:">
 
 <meta property="og:url" content="http://localhost:1313/posts/matrix-multiplication-optimization/">
 	<meta property="og:site_name" content="Luke Wassink">
 	<meta property="og:title" content="Matrix Multiplication Optimization">
 	<meta property="og:description" content="Optimizing Matrix Multiplication Link to heading Outline:
-Intro: optimize matrix multiplication Learn benchmarking (JMH, flame graphs) Using scala, but not functional Code on GitHub Naive Flat Transpose Accumulator Blocks slow flame graph nested forEach fast Parallel block size thread count final table Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits measurably from some classic optimizations like:">
+Intro: optimize matrix multiplication Learn benchmarking (JMH, flame graphs) Using Scala, but not functional Code on GitHub Naive Flat Transpose Accumulator Blocks slow flame graph nested forEach fast Parallel block size thread count final table Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits measurably from some classic optimizations like:">
 	<meta property="og:locale" content="en_us">
 	<meta property="og:type" content="article">
 		<meta property="article:section" content="posts">
@@ -221,7 +221,7 @@ Intro: optimize matrix multiplication Learn benchmarking (JMH, flame graphs) Usi
 <li>Intro: optimize matrix multiplication
 <ul>
 <li>Learn benchmarking (JMH, flame graphs)</li>
-<li>Using scala, but not functional</li>
+<li>Using Scala, but not functional</li>
 <li>Code on GitHub</li>
 </ul>
 </li>
@@ -250,7 +250,7 @@ optimization.
 The underlying algorithm is fairly simple, and it benefits measurably from some
 classic optimizations like:</p>
 <ul>
-<li>reducing array accesses</li>
+<li>reducing array access</li>
 <li>sequential memory access</li>
 <li>cache locality</li>
 <li>parallelization</li>
@@ -291,8 +291,13 @@ and uses lots of <code>var</code>s ;)</p>
 <p>The first question: how to represent our matrices? Well, a matrix is a list of
 rows (or columns, but let&rsquo;s stick with rows). That sounds like a list of lists,
 so let&rsquo;s use nested arrays:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-scala" data-lang="scala"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">NestedArray</span><span style="color:#f92672">(</span><span style="color:#66d9ef">val</span> data<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Array</span><span style="color:#f92672">[</span><span style="color:#66d9ef">Array</span><span style="color:#f92672">[</span><span style="color:#66d9ef">Double</span><span style="color:#f92672">]])</span>
-</span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#586e75;background-color:#fdf6e3;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-scala" data-lang="scala"><span style="display:flex;"><span><span style="color:#859900">class</span> <span style="color:#cb4b16">NestedArray</span>(<span style="color:#859900">val</span> <span style="color:#268bd2">data</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Array</span>[<span style="color:#859900;font-weight:bold">Array</span>[<span style="color:#859900;font-weight:bold">Double</span>]])
+</span></span></code></pre></div><p>Multiplication is just the simplest thing possible:</p>
+<div class="highlight"><pre tabindex="0" style="color:#586e75;background-color:#fdf6e3;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-scala" data-lang="scala"><span style="display:flex;"><span><span style="color:#859900">for</span> <span style="color:#268bd2">i</span> <span style="color:#859900">&lt;-</span> <span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">a</span>.<span style="color:#268bd2">rows</span> <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#859900">for</span> <span style="color:#268bd2">j</span> <span style="color:#859900">&lt;-</span> <span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">b</span>.<span style="color:#268bd2">cols</span> <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#859900">for</span> <span style="color:#268bd2">k</span> <span style="color:#859900">&lt;-</span> <span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">a</span>.<span style="color:#268bd2">cols</span> <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">set</span>(<span style="color:#268bd2">i</span>, <span style="color:#268bd2">j</span>, <span style="color:#268bd2">a</span>(<span style="color:#268bd2">i</span>, <span style="color:#268bd2">k</span>) * <span style="color:#268bd2">b</span>(<span style="color:#268bd2">k</span>, <span style="color:#268bd2">j</span>)) <span style="color:#93a1a1;font-style:italic">// This set&#39;s the (i, j) entry of prod
+</span></span></span></code></pre></div>
       </div>
 
 

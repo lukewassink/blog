@@ -9,7 +9,7 @@ title = 'Matrix Multiplication Optimization'
 Outline:
 - Intro: optimize matrix multiplication
     - Learn benchmarking (JMH, flame graphs)
-    - Using scala, but not functional
+    - Using Scala, but not functional
     - Code on GitHub
 - Naive
 - Flat
@@ -31,7 +31,7 @@ optimization.
 The underlying algorithm is fairly simple, and it benefits measurably from some
 classic optimizations like:
 
-- reducing array accesses
+- reducing array access
 - sequential memory access
 - cache locality
 - parallelization
@@ -72,5 +72,14 @@ so let's use nested arrays:
 
 ```scala
 class NestedArray(val data: Array[Array[Double]])
+```
+
+Multiplication is just the simplest thing possible:
+
+```scala
+for i <- 0 until a.rows do
+    for j <- 0 until b.cols do
+      for k <- 0 until a.cols do
+          prod.set(i, j, a(i, k) * b(k, j)) // This set's the (i, j) entry of prod
 ```
 

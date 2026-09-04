@@ -64,3 +64,7 @@ pagerSize = 20
     pageRef = '/about'
     weight = 2
 
+[markup]
+  [markup.highlight]
+    style = "solarized-light"
+

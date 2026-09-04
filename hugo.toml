@@ -1,9 +1,65 @@
 baseURL = 'https://lukewassink.com'
 locale = 'en-us'
-title = 'Luke Wassink website'
-theme = 'coder'
+title = 'Luke Wassink'
+theme = 'hugo-coder'
+languagecode = "en"
+defaultcontentlanguage = "en"
+
+[pagination]
+pagerSize = 20
 
 # Config for GitHub Pages
 [caches]
   [caches.images]
     dir = ':cacheDir/images'
+
+[params]
+  author = "Luke Wassink"
+  info = "Back end engineer"
+  description = "Luke Wassink's personal website"
+  keywords = "blog,developer,personal,engineer"
+  avatarurl = "/images/avatar.jpg"
+  #gravatar = "john.doe@example.com"
+
+  favicon_32 = "/img/favicon/favicon-32x32.png"
+  favicon_16 = "/img/favicon/favicon-16x16.png"
+
+  since = 2019
+
+  enableTwemoji = true
+
+  colorScheme = "auto"
+  hidecolorschemetoggle = false
+
+# [taxonomies]
+#   category = "categories"
+#   series = "series"
+#   tag = "tags"
+#   author = "authors"
+
+# Social links
+[[params.social]]
+  name = "Github"
+  icon = "fa-brands fa-github fa-2x"
+  weight = 1
+  url = "https://github.com/lukewassink/"
+[[params.social]]
+  name = "LinkedIn"
+  icon = "fa-brands fa-linkedin fa-2x"
+  weight = 1
+  url = "https://www.linkedin.com/in/lwassink/"
+
+[menus]
+  [[menus.main]]
+    name = 'Blog'
+    pageRef = '/posts'
+    weight = 2
+  [[menus.main]]
+    name = 'About'
+    pageRef = '/about'
+    weight = 2
+
+[module]
+  [module.hugoVersion]
+    extended = false
+    min = '0.146.0'

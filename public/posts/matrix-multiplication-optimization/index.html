@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Matrix Multiplication Optimization | Luke Wassink website</title>
+
+      <link rel="stylesheet" href="/css/main.css">
+
+
+      <script src="/js/main.js"></script>
+
+
+</head>
+<body>
+  <header>
+    <h1>Luke Wassink website</h1>
+
+  <nav>
+    <ul>
+    <li>
+      <a href="/">Home</a>
+    </li>
+    <li>
+      <a aria-current="true" class="ancestor" href="/posts/">Posts</a>
+    </li>
+    </ul>
+  </nav>
+
+
+  </header>
+  <main>
+    
+  <h1>Matrix Multiplication Optimization</h1>
+
+  
+  
+  <time datetime="2026-09-03T16:58:27-05:00">September 3, 2026</time>
+
+  <h1 id="optimizing-matrix-multiplication">Optimizing Matrix Multiplication</h1>
+<p>Outline:</p>
+<ul>
+<li>Intro: optimize matrix multiplication
+<ul>
+<li>Learn benchmarking (JMH, flame graphs)</li>
+<li>Using scala, but not functional</li>
+<li>Code on GitHub</li>
+</ul>
+</li>
+<li>Naive</li>
+<li>Flat</li>
+<li>Transpose</li>
+<li>Accumulator</li>
+<li>Blocks
+<ul>
+<li>slow</li>
+<li>flame graph</li>
+<li>nested forEach</li>
+<li>fast</li>
+</ul>
+</li>
+<li>Parallel
+<ul>
+<li>block size</li>
+<li>thread count</li>
+</ul>
+</li>
+<li>final table</li>
+</ul>
+<p>Matrix multiplication is a great test case to understand performance
+optimization.
+The underlying algorithm is fairly simple, and it benefits measurably from some
+classic optimizations like:</p>
+<ul>
+<li>reducing array accesses</li>
+<li>sequential memory access</li>
+<li>cache locality</li>
+<li>parallelization</li>
+</ul>
+<p>Read this post if you want to:</p>
+<ul>
+<li>Learn some principals to make your code run faster</li>
+<li>Learn how to apply them to matrix multiplication (and in case it helps entice
+you, deep neural nets are basically just doing lots of matrix
+multiplication)</li>
+<li>Get an introduction to benchmarking your code in the JVM</li>
+</ul>
+<p>This post lays out my path to a somewhat optimized matrix multiplication
+algorithm.
+The parameters of the project were:</p>
+<ul>
+<li>It shouldn&rsquo;t take to long. I spent about a week.</li>
+<li>Use the classic multiplication algorithm and just optimize execution. Don&rsquo;t
+use a fancy, complicated algorithm like XXX.</li>
+<li>Learn benchmarking and profiling</li>
+</ul>
+<p>I&rsquo;ve been working in Scala recently, so that&rsquo;s what I used.
+Benchmarking and flame graphs were generated with the Java MicroBenchmarking
+Harness (JMH) XXX.
+You can find all the code an run it for yourself at XXX.</p>
+<p>A disclaimer for Scala programmers: I&rsquo;ve written plenty of pure functions in Scala. I like type
+classes and monads as much as the next guy. For this project, and wanted to
+implement classical matrix multiplication and not worry about trying to
+understand the overhead of higher-order functions, so this code is imperative
+and uses lots of <code>var</code>s ;)</p>
+<h2 id="naive-matrix-multiplication">Naive matrix multiplication</h2>
+<p>The first question: how to represent our matrices? Well, a matrix is a list of
+rows (or columns, but let&rsquo;s stick with rows). That sounds like a list of lists,
+so let&rsquo;s use nested arrays:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-scala" data-lang="scala"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">NestedArray</span><span style="color:#f92672">(</span><span style="color:#66d9ef">val</span> data<span style="color:#66d9ef">:</span> <span style="color:#66d9ef">Array</span><span style="color:#f92672">[</span><span style="color:#66d9ef">Array</span><span style="color:#f92672">[</span><span style="color:#66d9ef">Double</span><span style="color:#f92672">]])</span>
+</span></span></code></pre></div>
+  
+
+
+  </main>
+  <footer>
+    <p>Copyright 2026. All rights reserved.</p>
+
+  </footer>
+</body>
+</html>

@@ -2,7 +2,6 @@ baseURL = 'https://lukewassink.com'
 locale = 'en-us'
 title = 'Luke Wassink'
 theme = 'hugo-coder'
-languagecode = "en"
 defaultcontentlanguage = "en"
 
 [pagination]

@@ -24,7 +24,6 @@ pagerSize = 20
   description = "Luke Wassink's personal website"
   keywords = "blog,developer,personal,engineer"
   avatarurl = "/images/avatar.jpg"
-  #gravatar = "john.doe@example.com"
 
   favicon_32 = "/img/favicon/favicon-32x32.png"
   favicon_16 = "/img/favicon/favicon-16x16.png"
@@ -36,11 +35,11 @@ pagerSize = 20
   colorScheme = "auto"
   hidecolorschemetoggle = false
 
-# [taxonomies]
-#   category = "categories"
-#   series = "series"
-#   tag = "tags"
-#   author = "authors"
+  math = true
+
+[taxonomies]
+  series = "series"
+  tag = "tags"
 
 # Social links
 [[params.social]]
@@ -53,6 +52,19 @@ pagerSize = 20
   icon = "fa-brands fa-linkedin fa-2x"
   weight = 1
   url = "https://www.linkedin.com/in/lwassink/"
+
+[params.giscus] # https://giscus.app
+  repo = "lukewassink/blog"
+  repoID = "R_kgDOUNP29Q"
+  category = "Announcements"
+  categoryID = "DIC_kwDOUNP29c4DE6mE"
+  mapping = "pathname"
+  strict = "0"
+  reactionsEnabled = "1"
+  emitMetadata = "0"
+  inputPosition = "top"
+  theme = "preferred_color_scheme"
+  lang = "en"
 
 [menus]
   [[menus.main]]

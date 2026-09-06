@@ -31,7 +31,11 @@
     integrity="sha256-WB7X10vZBI0OOpE2OSfXLvIpQtdyJUayf3zCnjU5Drg="
     crossorigin="anonymous"></script>
   <script>
-    mermaid.initialize({startOnLoad: true});
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+    });
   </script>
   {{ end }}
 

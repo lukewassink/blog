@@ -20,53 +20,42 @@
     Link to heading
   
 
-Outline:
-
-Intro: optimize matrix multiplication
-
-Learn benchmarking (JMH, flame graphs)
-Using Scala, but not functional
-Code on GitHub
-
-
-Naive
-Flat
-Transpose
-Accumulator
-Blocks
-
-slow
-flame graph
-nested forEach
-fast
-
-
-Parallel
-
-block size
-thread count
-
-
-final table
-
 Matrix multiplication is a great test case to understand performance
-optimization.
-The underlying algorithm is fairly simple, and it benefits measurably from some
-classic optimizations like:">
+optimization.  The underlying algorithm is fairly simple, and it benefits
+significantly from some classic optimizations like:
+
+reducing array access
+sequential memory access
+cache locality
+parallelization
+
+This post lays out my path to a somewhat optimized matrix multiplication
+algorithm.  The parameters of the project were:
+
+It shouldn&rsquo;t take to long. I spent about a week.
+Use the classic multiplication algorithm and just optimize execution. Don&rsquo;t
+use a fancy, complicated algorithm like XXX.
+Learn benchmarking and profiling
+
+I&rsquo;ve been working in Scala recently, so that&rsquo;s what I used.  Benchmarking and
+flame graphs were generated with the Java MicroBenchmarking Harness (JMH) XXX.
+You can find all the code an run it for yourself at XXX.">
 <meta name="keywords" content="blog,developer,personal,engineer">
 
 
 
 	<meta name="twitter:card" content="summary">
 	<meta name="twitter:title" content="Matrix Multiplication Optimization">
-	<meta name="twitter:description" content="Optimizing Matrix Multiplication Link to heading Outline:
-Intro: optimize matrix multiplication Learn benchmarking (JMH, flame graphs) Using Scala, but not functional Code on GitHub Naive Flat Transpose Accumulator Blocks slow flame graph nested forEach fast Parallel block size thread count final table Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits measurably from some classic optimizations like:">
+	<meta name="twitter:description" content="Optimizing Matrix Multiplication Link to heading Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits significantly from some classic optimizations like:
+reducing array access sequential memory access cache locality parallelization This post lays out my path to a somewhat optimized matrix multiplication algorithm. The parameters of the project were:
+It shouldn’t take to long. I spent about a week. Use the classic multiplication algorithm and just optimize execution. Don’t use a fancy, complicated algorithm like XXX. Learn benchmarking and profiling I’ve been working in Scala recently, so that’s what I used. Benchmarking and flame graphs were generated with the Java MicroBenchmarking Harness (JMH) XXX. You can find all the code an run it for yourself at XXX.">
 
 <meta property="og:url" content="http://localhost:1313/posts/matrix-multiplication-optimization/">
 	<meta property="og:site_name" content="Luke Wassink">
 	<meta property="og:title" content="Matrix Multiplication Optimization">
-	<meta property="og:description" content="Optimizing Matrix Multiplication Link to heading Outline:
-Intro: optimize matrix multiplication Learn benchmarking (JMH, flame graphs) Using Scala, but not functional Code on GitHub Naive Flat Transpose Accumulator Blocks slow flame graph nested forEach fast Parallel block size thread count final table Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits measurably from some classic optimizations like:">
+	<meta property="og:description" content="Optimizing Matrix Multiplication Link to heading Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits significantly from some classic optimizations like:
+reducing array access sequential memory access cache locality parallelization This post lays out my path to a somewhat optimized matrix multiplication algorithm. The parameters of the project were:
+It shouldn’t take to long. I spent about a week. Use the classic multiplication algorithm and just optimize execution. Don’t use a fancy, complicated algorithm like XXX. Learn benchmarking and profiling I’ve been working in Scala recently, so that’s what I used. Benchmarking and flame graphs were generated with the Java MicroBenchmarking Harness (JMH) XXX. You can find all the code an run it for yourself at XXX.">
 	<meta property="og:locale" content="en_us">
 	<meta property="og:type" content="article">
 		<meta property="article:section" content="posts">
@@ -198,7 +187,7 @@ Intro: optimize matrix multiplication Learn benchmarking (JMH, flame graphs) Usi
             </span>
             <span class="reading-time">
               <i class="fa-solid fa-clock" aria-hidden="true"></i>
-              6-minute read
+              10-minute read
             </span>
           </div>
           
@@ -232,71 +221,31 @@ Intro: optimize matrix multiplication Learn benchmarking (JMH, flame graphs) Usi
     <span class="sr-only">Link to heading</span>
   </a>
 </h1>
-<p>Outline:</p>
-<ul>
-<li>Intro: optimize matrix multiplication
-<ul>
-<li>Learn benchmarking (JMH, flame graphs)</li>
-<li>Using Scala, but not functional</li>
-<li>Code on GitHub</li>
-</ul>
-</li>
-<li>Naive</li>
-<li>Flat</li>
-<li>Transpose</li>
-<li>Accumulator</li>
-<li>Blocks
-<ul>
-<li>slow</li>
-<li>flame graph</li>
-<li>nested forEach</li>
-<li>fast</li>
-</ul>
-</li>
-<li>Parallel
-<ul>
-<li>block size</li>
-<li>thread count</li>
-</ul>
-</li>
-<li>final table</li>
-</ul>
 <p>Matrix multiplication is a great test case to understand performance
-optimization.
-The underlying algorithm is fairly simple, and it benefits measurably from some
-classic optimizations like:</p>
+optimization.  The underlying algorithm is fairly simple, and it benefits
+significantly from some classic optimizations like:</p>
 <ul>
 <li>reducing array access</li>
 <li>sequential memory access</li>
 <li>cache locality</li>
 <li>parallelization</li>
 </ul>
-<p>Read this post if you want to:</p>
-<ul>
-<li>Learn some principals to make your code run faster</li>
-<li>Learn how to apply them to matrix multiplication (and in case it helps entice
-you, deep neural nets are basically just doing lots of matrix
-multiplication)</li>
-<li>Get an introduction to benchmarking your code in the JVM</li>
-</ul>
 <p>This post lays out my path to a somewhat optimized matrix multiplication
-algorithm.
-The parameters of the project were:</p>
+algorithm.  The parameters of the project were:</p>
 <ul>
 <li>It shouldn&rsquo;t take to long. I spent about a week.</li>
 <li>Use the classic multiplication algorithm and just optimize execution. Don&rsquo;t
 use a fancy, complicated algorithm like XXX.</li>
 <li>Learn benchmarking and profiling</li>
 </ul>
-<p>I&rsquo;ve been working in Scala recently, so that&rsquo;s what I used.
-Benchmarking and flame graphs were generated with the Java MicroBenchmarking
-Harness (JMH) XXX.
+<p>I&rsquo;ve been working in Scala recently, so that&rsquo;s what I used.  Benchmarking and
+flame graphs were generated with the Java MicroBenchmarking Harness (JMH) XXX.
 You can find all the code an run it for yourself at XXX.</p>
-<p>A disclaimer for Scala programmers: I&rsquo;ve written plenty of pure functions in Scala. I like type
-classes and monads as much as the next guy. For this project, and wanted to
-implement classical matrix multiplication and not worry about trying to
-understand the overhead of higher-order functions, so this code is imperative
-and uses lots of <code>var</code>s ;)</p>
+<p>A disclaimer for Scala programmers: I&rsquo;ve written plenty of pure functions in
+Scala. I like type classes and monads as much as the next guy. For this project,
+and wanted to implement classical matrix multiplication and not worry about
+trying to understand the overhead of higher-order functions, so this code is
+imperative and uses lots of <code>var</code>s ;)</p>
 <h2 id="matrix-multiplication">
   Matrix multiplication
   <a class="heading-link" href="#matrix-multiplication">
@@ -425,10 +374,10 @@ action.</p>
 memory hierarchy. Each core also has an L1 cache, and accessing it can be one
 hundred times faster than memory access. The CPU will try to keep recently used
 data there, but if we keep asking for different data, that won&rsquo;t help.</p>
-<p>Here we calculate $prod_{1,1}$ using the first row of <code>a</code> and the first column
-of <code>b</code>. Then we move on the $prod_{1,2}$ and ask for the second column of <code>b</code>,
+<p>Here we calculate $c_{1,1}$ using the first row of <code>a</code> and the first column
+of <code>b</code>. Then we move on the $c_{1,2}$ and ask for the second column of <code>b</code>,
 and so on. This means our data doesn&rsquo;t get to stick around in the cache for very
-long. By the time we get to $prod_{2, 1}$ and want the first column of <code>b</code>
+long. By the time we get to $c_{2, 1}$ and want the first column of <code>b</code>
 again, it&rsquo;s long gone from the cache.</p>
 <p>It would be nice to do all the calculations we need on one subset of entries
 from <code>a</code> and <code>b</code> all at once, so we can keep them cached. The solution is
@@ -446,8 +395,107 @@ A_{2,1} &amp; A_{2,2} &amp; \dots &amp; A_{2,m} \\
 A_{m,1} &amp; A_{m,2} &amp; \dots &amp; A_{m,m}
 \end{matrix}
 \right),
-$$
-where $m = n / d$. Then we can calculate the blocks of the product by</p>
+$$</p>
+<p>where $m = n / d$. Then we can calculate the blocks of the product by:</p>
+<p>$$
+C_{x,y} = A_{x,1}B_{1,y} + A_{x,2}B_{2,y} + \dots + A_{x,d}B_{d,y}.
+$$</p>
+<p>The products on the right side of the equation are regular matrix
+multiplication. This allows us to write matrix multiplication in two steps:
+first multiply the individual blocks, then multiply the matrices of blocks. For
+purposes of calculating entries of $c$, this amounts to breaking our sum into an
+inner an outer sum:</p>
+<p>$$
+c_{i,j} = \sum_{x = 1}^m\sum_{k = 1}^d a_{i, xd + k}b_{xd + k, j}.
+$$</p>
+<p>We are computing the same sum-just in a different order. If we further compute
+entries block-by-block rather than row-by-row, we will end up re-using the
+entries of a given block in our calculation til we are done with them before
+moving on to another block. For small enough blocks, this should improve our
+cache locality.</p>
+<p>We implement this algorithm as:</p>
+<div class="highlight"><pre tabindex="0" style="color:#586e75;background-color:#fdf6e3;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-scala" data-lang="scala"><span style="display:flex;"><span><span style="color:#859900">for</span> <span style="color:#268bd2">i</span> <span style="color:#859900">&lt;-</span> <span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">rows</span> <span style="color:#268bd2">by</span> <span style="color:#268bd2">blockSize</span> <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#859900">for</span> <span style="color:#268bd2">j</span> <span style="color:#859900">&lt;-</span> <span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">cols</span> <span style="color:#268bd2">by</span> <span style="color:#268bd2">blockSize</span> <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#859900">for</span> <span style="color:#268bd2">k</span> <span style="color:#859900">&lt;-</span> <span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">a</span>.<span style="color:#268bd2">cols</span> <span style="color:#268bd2">by</span> <span style="color:#268bd2">blockSize</span> <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#859900">for</span> <span style="color:#268bd2">x</span> <span style="color:#859900">&lt;-</span> <span style="color:#268bd2">i</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">min</span>(<span style="color:#268bd2">i</span> + <span style="color:#268bd2">blockSize</span>, <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">rows</span>) <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#859900">for</span> <span style="color:#268bd2">y</span> <span style="color:#859900">&lt;-</span> <span style="color:#268bd2">j</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">min</span>(<span style="color:#268bd2">j</span> + <span style="color:#268bd2">blockSize</span>, <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">cols</span>) <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#859900">var</span> <span style="color:#268bd2">sum</span> <span style="color:#859900">=</span> <span style="color:#2aa198;font-weight:bold">0.0</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#859900">for</span> <span style="color:#268bd2">z</span> <span style="color:#859900">&lt;-</span> <span style="color:#268bd2">k</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">min</span>(<span style="color:#268bd2">k</span> + <span style="color:#268bd2">blockSize</span>, <span style="color:#268bd2">a</span>.<span style="color:#268bd2">cols</span>) <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#268bd2">sum</span> <span style="color:#859900">=</span> <span style="color:#268bd2">sum</span> + <span style="color:#268bd2">a</span>(<span style="color:#268bd2">x</span>, <span style="color:#268bd2">z</span>) * <span style="color:#268bd2">b</span>(<span style="color:#268bd2">z</span>, <span style="color:#268bd2">y</span>)
+</span></span><span style="display:flex;"><span>          <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">set</span>(<span style="color:#268bd2">x</span>, <span style="color:#268bd2">y</span>, <span style="color:#268bd2">prod</span>(<span style="color:#268bd2">x</span>, <span style="color:#268bd2">y</span>) + <span style="color:#268bd2">sum</span>)
+</span></span></code></pre></div><p>The remaining question is: how big should <code>blockSize</code> be? You could try to
+calculate the largest possible block that would allow the calculation to fit in
+the L1 cache, but CPUs are hard to reason about. Better just to experiment.
+Trying a range of block sizes, we get the following times:</p>
+<p>XXX</p>
+<p>And&hellip; it&rsquo;s worse :( After looking through some flame graphs, it turns out there
+are two issues:</p>
+<ol>
+<li>Scala ranges are significantly slower when you set an increment.</li>
+<li><code>forEach</code> loops seem fine on their own, but when you nest them too deeply,
+they slow down dramatically.</li>
+</ol>
+<p>To solve this, we can switch to while loops. The code is gets pretty ugly-check
+out the repo if you want to see it. However, it does fix the problem:</p>
+<p>XXX - graph</p>
+<p>We now have an improvement of XXX% over the naive approach. This is as far as
+we&rsquo;ll go with a single thread. Time to parallelize!</p>
+<h2 id="parallel-blocks">
+  Parallel blocks
+  <a class="heading-link" href="#parallel-blocks">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Matrix multiplication is particularly amenable to parallelization because we can
+just give each thread a different chunk of the product matrix to compute. No
+shared data structures. No need for locks or mutexes.</p>
+<p>The plan is to continue using blocks. We&rsquo;ll divide the rows of blocks among the
+threads. For example, if we have $64\times 64$ matrix with blocks of size 8, there are 8
+rows of blocks. If we use 4 threads, then each thread get&rsquo;s 2 rows of blocks.
+That means each thread is responsible for 16 blocks, for 16 rows, or for 1024
+entries, however you want to think about it. Remember we&rsquo;re using while loops
+now. The code to compute one row of blocks is:</p>
+<div class="highlight"><pre tabindex="0" style="color:#586e75;background-color:#fdf6e3;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-scala" data-lang="scala"><span style="display:flex;"><span><span style="color:#859900">def</span> <span style="color:#268bd2">computeBlockRow</span>(<span style="color:#268bd2">i</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Int</span>)<span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Unit</span> =
+</span></span><span style="display:flex;"><span>  <span style="color:#859900">var</span> <span style="color:#268bd2">j</span> <span style="color:#859900">=</span> <span style="color:#2aa198;font-weight:bold">0</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#859900">while</span> <span style="color:#268bd2">j</span> &lt; <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">cols</span> <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#859900">var</span> <span style="color:#268bd2">k</span> <span style="color:#859900">=</span> <span style="color:#2aa198;font-weight:bold">0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#859900">while</span> <span style="color:#268bd2">k</span> &lt; <span style="color:#268bd2">a</span>.<span style="color:#268bd2">cols</span> <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#859900">var</span> <span style="color:#268bd2">x</span> <span style="color:#859900">=</span> <span style="color:#268bd2">i</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#859900">while</span> <span style="color:#268bd2">x</span> &lt; <span style="color:#268bd2">min</span>(<span style="color:#268bd2">i</span> + <span style="color:#268bd2">blockSize</span>, <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">rows</span>) <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#859900">var</span> <span style="color:#268bd2">y</span> <span style="color:#859900">=</span> <span style="color:#268bd2">j</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#859900">while</span> <span style="color:#268bd2">y</span> &lt; <span style="color:#268bd2">min</span>(<span style="color:#268bd2">j</span> + <span style="color:#268bd2">blockSize</span>, <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">cols</span>) <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#859900">var</span> <span style="color:#268bd2">sum</span> <span style="color:#859900">=</span> <span style="color:#2aa198;font-weight:bold">0.0</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#859900">var</span> <span style="color:#268bd2">z</span> <span style="color:#859900">=</span> <span style="color:#268bd2">k</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#859900">while</span> <span style="color:#268bd2">z</span> &lt; <span style="color:#268bd2">min</span>(<span style="color:#268bd2">k</span> + <span style="color:#268bd2">blockSize</span>, <span style="color:#268bd2">a</span>.<span style="color:#268bd2">cols</span>) <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#268bd2">sum</span> <span style="color:#859900">=</span> <span style="color:#268bd2">sum</span> + <span style="color:#268bd2">a</span>(<span style="color:#268bd2">x</span>, <span style="color:#268bd2">z</span>) * <span style="color:#268bd2">b</span>(<span style="color:#268bd2">z</span>, <span style="color:#268bd2">y</span>)
+</span></span><span style="display:flex;"><span>            <span style="color:#268bd2">z</span> <span style="color:#859900">=</span> <span style="color:#268bd2">z</span> + <span style="color:#2aa198;font-weight:bold">1</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">set</span>(<span style="color:#268bd2">x</span>, <span style="color:#268bd2">y</span>, <span style="color:#268bd2">prod</span>(<span style="color:#268bd2">x</span>, <span style="color:#268bd2">y</span>) + <span style="color:#268bd2">sum</span>)
+</span></span><span style="display:flex;"><span>          <span style="color:#268bd2">y</span> <span style="color:#859900">=</span> <span style="color:#268bd2">y</span> + <span style="color:#2aa198;font-weight:bold">1</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#268bd2">x</span> <span style="color:#859900">=</span> <span style="color:#268bd2">x</span> + <span style="color:#2aa198;font-weight:bold">1</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#268bd2">k</span> <span style="color:#859900">=</span> <span style="color:#268bd2">k</span> + <span style="color:#268bd2">blockSize</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#268bd2">j</span> <span style="color:#859900">=</span> <span style="color:#268bd2">j</span> + <span style="color:#268bd2">blockSize</span>
+</span></span></code></pre></div><p>Each thread will need to compute some number of rows of blocks. Let&rsquo;s associate
+each thread with an integer <code>t</code> and write a function <code>computeRowsForThread(t: Int): Unit</code> that fills in all the entries in the product matrix that thread <code>t</code>
+is responsible for. The details are fiddly and confusing because we have to
+handle the case where rows of blocks don&rsquo;t divide evenly among the threads;
+check the repo if you&rsquo;re interested.</p>
+<p>In any case, all that remains is to run each thread asynchronously in a Scala
+<code>Future</code> and wait for them to fill in the results:</p>
+<div class="highlight"><pre tabindex="0" style="color:#586e75;background-color:#fdf6e3;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-scala" data-lang="scala"><span style="display:flex;"><span><span style="color:#859900">val</span> <span style="color:#268bd2">futures</span> <span style="color:#859900">=</span> (<span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">threadCount</span>).<span style="color:#268bd2">map</span>(<span style="color:#268bd2">t</span> <span style="color:#859900">=&gt;</span> <span style="color:#cb4b16">Future</span>{ <span style="color:#268bd2">computeRowsForThread</span>(<span style="color:#268bd2">t</span>) })
+</span></span><span style="display:flex;"><span><span style="color:#268bd2">futures</span>.<span style="color:#268bd2">foreach</span>(<span style="color:#cb4b16">Await</span>.<span style="color:#268bd2">result</span>(<span style="color:#859900">_</span>, <span style="color:#cb4b16">Duration</span>.<span style="color:#cb4b16">Inf</span>))
+</span></span></code></pre></div><p>As we&rsquo;ve already noted, optimization is an empirical science. We shouldn&rsquo;t try
+to guess what block size and thread count will be best. Instead, we&rsquo;ll just
+benchmark a range of values. At first I had a bug that caused the computation to
+complete correctly (thus cleverly evading the unit tests) but
+distributed the rows unevenly among the threads, causing worse performance with
+a higher thread count. With the bug fixed, we get:</p>
+<p>XXX</p>
+<p>The best performance is for 4 threads with a block size of XXX, for a XXX%
+improvement over our original, naive implementation.</p>
+<p>To summarize, here are the benchmarks of the major versions we tried out along
+the way:</p>
+<p>XXX table</p>
 
       </div>
 

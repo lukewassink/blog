@@ -9,63 +9,32 @@ authors = ['Luke Wassink']
 
 # Optimizing Matrix Multiplication
 
-Outline:
-- Intro: optimize matrix multiplication
-    - Learn benchmarking (JMH, flame graphs)
-    - Using Scala, but not functional
-    - Code on GitHub
-- Naive
-- Flat
-- Transpose
-- Accumulator
-- Blocks
-    - slow
-    - flame graph
-    - nested forEach
-    - fast
-- Parallel
-    - block size
-    - thread count
-- final table
-
-
 Matrix multiplication is a great test case to understand performance
-optimization.
-The underlying algorithm is fairly simple, and it benefits measurably from some
-classic optimizations like:
+optimization.  The underlying algorithm is fairly simple, and it benefits
+significantly from some classic optimizations like:
 
 - reducing array access
 - sequential memory access
 - cache locality
 - parallelization
 
-Read this post if you want to:
-
-- Learn some principals to make your code run faster
-- Learn how to apply them to matrix multiplication (and in case it helps entice
-    you, deep neural nets are basically just doing lots of matrix
-    multiplication)
-- Get an introduction to benchmarking your code in the JVM
-
 This post lays out my path to a somewhat optimized matrix multiplication
-algorithm.
-The parameters of the project were:
+algorithm.  The parameters of the project were:
 
 - It shouldn't take to long. I spent about a week.
 - Use the classic multiplication algorithm and just optimize execution. Don't
     use a fancy, complicated algorithm like XXX.
 - Learn benchmarking and profiling
 
-I've been working in Scala recently, so that's what I used.
-Benchmarking and flame graphs were generated with the Java MicroBenchmarking
-Harness (JMH) XXX.
+I've been working in Scala recently, so that's what I used.  Benchmarking and
+flame graphs were generated with the Java MicroBenchmarking Harness (JMH) XXX.
 You can find all the code an run it for yourself at XXX.
 
-A disclaimer for Scala programmers: I've written plenty of pure functions in Scala. I like type
-classes and monads as much as the next guy. For this project, and wanted to
-implement classical matrix multiplication and not worry about trying to
-understand the overhead of higher-order functions, so this code is imperative
-and uses lots of `var`s ;)
+A disclaimer for Scala programmers: I've written plenty of pure functions in
+Scala. I like type classes and monads as much as the next guy. For this project,
+and wanted to implement classical matrix multiplication and not worry about
+trying to understand the overhead of higher-order functions, so this code is
+imperative and uses lots of `var`s ;)
 
 ## Matrix multiplication
 
@@ -204,10 +173,10 @@ memory hierarchy. Each core also has an L1 cache, and accessing it can be one
 hundred times faster than memory access. The CPU will try to keep recently used
 data there, but if we keep asking for different data, that won't help.
 
-Here we calculate $prod_{1,1}$ using the first row of `a` and the first column
-of `b`. Then we move on the $prod_{1,2}$ and ask for the second column of `b`,
+Here we calculate $c_{1,1}$ using the first row of `a` and the first column
+of `b`. Then we move on the $c_{1,2}$ and ask for the second column of `b`,
 and so on. This means our data doesn't get to stick around in the cache for very
-long. By the time we get to $prod_{2, 1}$ and want the first column of `b`
+long. By the time we get to $c_{2, 1}$ and want the first column of `b`
 again, it's long gone from the cache.
 
 It would be nice to do all the calculations we need on one subset of entries
@@ -228,4 +197,129 @@ a =
 \end{matrix}
 \right),
 $$
-where $m = n / d$. Then we can calculate the blocks of the product by
+
+where $m = n / d$. Then we can calculate the blocks of the product by:
+
+$$
+C_{x,y} = A_{x,1}B_{1,y} + A_{x,2}B_{2,y} + \dots + A_{x,d}B_{d,y}.
+$$
+
+The products on the right side of the equation are regular matrix
+multiplication. This allows us to write matrix multiplication in two steps:
+first multiply the individual blocks, then multiply the matrices of blocks. For
+purposes of calculating entries of $c$, this amounts to breaking our sum into an
+inner an outer sum:
+
+$$
+c_{i,j} = \sum_{x = 1}^m\sum_{k = 1}^d a_{i, xd + k}b_{xd + k, j}.
+$$
+
+We are computing the same sum-just in a different order. If we further compute
+entries block-by-block rather than row-by-row, we will end up re-using the
+entries of a given block in our calculation til we are done with them before
+moving on to another block. For small enough blocks, this should improve our
+cache locality.
+
+We implement this algorithm as:
+
+```scala
+for i <- 0 until prod.rows by blockSize do
+  for j <- 0 until prod.cols by blockSize do
+    for k <- 0 until a.cols by blockSize do
+      for x <- i until min(i + blockSize, prod.rows) do
+        for y <- j until min(j + blockSize, prod.cols) do
+          var sum = 0.0
+          for z <- k until min(k + blockSize, a.cols) do
+            sum = sum + a(x, z) * b(z, y)
+          prod.set(x, y, prod(x, y) + sum)
+```
+
+The remaining question is: how big should `blockSize` be? You could try to
+calculate the largest possible block that would allow the calculation to fit in
+the L1 cache, but CPUs are hard to reason about. Better just to experiment.
+Trying a range of block sizes, we get the following times:
+
+XXX
+
+And... it's worse :( After looking through some flame graphs, it turns out there
+are two issues:
+
+1. Scala ranges are significantly slower when you set an increment.
+1. `forEach` loops seem fine on their own, but when you nest them too deeply,
+   they slow down dramatically.
+
+To solve this, we can switch to while loops. The code is gets pretty ugly-check
+out the repo if you want to see it. However, it does fix the problem:
+
+XXX - graph
+
+We now have an improvement of XXX% over the naive approach. This is as far as
+we'll go with a single thread. Time to parallelize!
+
+
+## Parallel blocks
+
+Matrix multiplication is particularly amenable to parallelization because we can
+just give each thread a different chunk of the product matrix to compute. No
+shared data structures. No need for locks or mutexes.
+
+The plan is to continue using blocks. We'll divide the rows of blocks among the
+threads. For example, if we have $64\times 64$ matrix with blocks of size 8, there are 8
+rows of blocks. If we use 4 threads, then each thread get's 2 rows of blocks.
+That means each thread is responsible for 16 blocks, for 16 rows, or for 1024
+entries, however you want to think about it. Remember we're using while loops
+now. The code to compute one row of blocks is:
+
+```scala
+def computeBlockRow(i: Int): Unit =
+  var j = 0
+  while j < prod.cols do
+    var k = 0
+    while k < a.cols do
+      var x = i
+      while x < min(i + blockSize, prod.rows) do
+        var y = j
+        while y < min(j + blockSize, prod.cols) do
+          var sum = 0.0
+          var z = k
+          while z < min(k + blockSize, a.cols) do
+            sum = sum + a(x, z) * b(z, y)
+            z = z + 1
+          prod.set(x, y, prod(x, y) + sum)
+          y = y + 1
+        x = x + 1
+      k = k + blockSize
+    j = j + blockSize
+```
+
+Each thread will need to compute some number of rows of blocks. Let's associate
+each thread with an integer `t` and write a function `computeRowsForThread(t:
+Int): Unit` that fills in all the entries in the product matrix that thread `t`
+is responsible for. The details are fiddly and confusing because we have to
+handle the case where rows of blocks don't divide evenly among the threads;
+check the repo if you're interested.
+
+In any case, all that remains is to run each thread asynchronously in a Scala
+`Future` and wait for them to fill in the results:
+
+```scala
+val futures = (0 until threadCount).map(t => Future{ computeRowsForThread(t) })
+futures.foreach(Await.result(_, Duration.Inf))
+```
+
+As we've already noted, optimization is an empirical science. We shouldn't try
+to guess what block size and thread count will be best. Instead, we'll just
+benchmark a range of values. At first I had a bug that caused the computation to
+complete correctly (thus cleverly evading the unit tests) but 
+distributed the rows unevenly among the threads, causing worse performance with
+a higher thread count. With the bug fixed, we get:
+
+XXX
+
+The best performance is for 4 threads with a block size of XXX, for a XXX%
+improvement over our original, naive implementation.
+
+To summarize, here are the benchmarks of the major versions we tried out along
+the way:
+
+XXX table

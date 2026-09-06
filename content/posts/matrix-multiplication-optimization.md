@@ -362,12 +362,38 @@ complete correctly (thus cleverly evading the unit tests) but
 distributed the rows unevenly among the threads, causing worse performance with
 a higher thread count. With the bug fixed, we get:
 
-XXX graph with separate line for each thread count
+{{<mermaid>}}
+---
+config:
+  themeVariables:
+    xyChart:
+      plotColorPalette: '#3594CC, #EA801C, #8CC5E3, #F0B077'
+---
+xychart
+    title "Performance of parallel tiling"
+    x-axis "Block size" [16, 32, 64, 128, 256]
+    y-axis "Benchmark in ms" 0 --> 800
+    line "1 thread" [636, 456, 458, 499, 599]
+    line "2 threads" [348, 279, 221, 252, 314]
+    line "3 threads" [219, 219, 218, 223, 240]
+    line "4 threads" [207, 174, 184, 174, 179]
+{{</mermaid>}}
 
-The best performance is for 4 threads with a block size of XXX, for about a 7x
-improvement over our original, naive implementation.
 
-To summarize, here are the benchmarks of the major versions we tried out along
-the way:
+As expected, performance increases roughly proportionally to thread count. Very
+small and very large blocks perform somewhat worse, but performance is fairly
+insensitive to block size in the optimal range. The optimal benchmark is 174ms,
+for about a about a 7x improvement over our initial approach. Not bad for a
+fairly high level implementation! It would be fun to pick up where we left off
+using C++ some day.
 
-XXX table
+In summary, here are the benchmarks of the major versions we tried out along the
+way:
+
+| Implementation                      | Benchmark |
+|-------------------------------------|-----------|
+| Naive (nested arrays)               | 1200 ms   |
+| Naive (flat array)                  | 906 ms    |
+| Naive (flat array + `transpose(b)`) | 831 ms    |
+| Tiling                              | 499 ms    |
+| Parallel (4 threads)                | 174 ms    |

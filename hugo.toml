@@ -37,6 +37,8 @@ pagerSize = 20
 
   math = true
 
+  customSCSS = ["scss/custom.scss"]
+
 [params.umami]
     siteID = "5593934a-c200-46c5-9790-763e42f543f9"
     scriptURL = "https://cloud.umami.is/script.js"

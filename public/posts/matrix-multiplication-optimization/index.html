@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<head>
   <title>
   Matrix Multiplication Optimization · Luke Wassink
 </title>
@@ -44,7 +44,7 @@ of the computation in parallel.">
 	<meta name="twitter:description" content="Optimizing Matrix Multiplication Link to heading Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits significantly from some classic optimizations like:
 reducing array access sequential memory access cache locality parallelization There are also fancy algorithms that reduce the asymptotic complexity, but they are so complex they usually only show benefits for very large matrices, if at all. In any case, our plan will be to use the traditional algorithm for matrix multiplication and explore the benefits we can get from other changes like: how we store the matrices, what order we do the computations in, and running parts of the computation in parallel.">
 
-<meta property="og:url" content="http://localhost:1313/posts/matrix-multiplication-optimization/">
+<meta property="og:url" content="https://lukewassink.com/posts/matrix-multiplication-optimization/">
 	<meta property="og:site_name" content="Luke Wassink">
 	<meta property="og:title" content="Matrix Multiplication Optimization">
 	<meta property="og:description" content="Optimizing Matrix Multiplication Link to heading Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits significantly from some classic optimizations like:
@@ -61,7 +61,7 @@ reducing array access sequential memory access cache locality parallelization Th
 
 
 
-<link rel="canonical" href="http://localhost:1313/posts/matrix-multiplication-optimization/">
+<link rel="canonical" href="https://lukewassink.com/posts/matrix-multiplication-optimization/">
 
 
 <link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
@@ -71,7 +71,7 @@ reducing array access sequential memory access cache locality parallelization Th
 
   
   
-  <link rel="stylesheet" href="/css/coder.css" media="screen">
+  <link rel="stylesheet" href="/css/coder.min.5e94c1acf7aa2066035cf2764ae3e4fe39db101d68b870f919966100d51fb861.css" integrity="sha256-XpTBrPeqIGYDXPJ2SuPk/jnbEB1ouHD5GZZhANUfuGE=" crossorigin="anonymous" media="screen" />
 
 
 
@@ -81,13 +81,19 @@ reducing array access sequential memory access cache locality parallelization Th
   
     
     
-    <link rel="stylesheet" href="/css/coder-dark.css" media="screen">
+    <link rel="stylesheet" href="/css/coder-dark.min.ad48f476275974885bdc03d5251e3cdbe1678c54a63ff772376b0ed2adc468dd.css" integrity="sha256-rUj0didZdIhb3APVJR482&#43;FnjFSmP/dyN2sO0q3EaN0=" crossorigin="anonymous" media="screen" />
   
 
 
 
  
 
+
+  
+  
+    
+    <link rel="stylesheet" href="/scss/custom.min.4823bb2c50951f2375631a0ba554939af59df6964e61ce5c9dc2c3180f927456.css" integrity="sha256-SCO7LFCVHyN1YxoLpVSTmvWd9pZOYc5cncLDGA&#43;SdFY=" crossorigin="anonymous" media="screen" />
+  
 
 
 
@@ -130,7 +136,7 @@ reducing array access sequential memory access cache locality parallelization Th
     <nav class="navigation">
   <section class="container">
     
-    <a class="navigation-title" href="http://localhost:1313/">
+    <a class="navigation-title" href="https://lukewassink.com/">
       Luke Wassink
     </a>
     
@@ -165,7 +171,7 @@ reducing array access sequential memory access cache locality parallelization Th
       <header>
         <div class="post-title">
           <h1 class="title">
-            <a class="title-link" href="http://localhost:1313/posts/matrix-multiplication-optimization/">
+            <a class="title-link" href="https://lukewassink.com/posts/matrix-multiplication-optimization/">
               Matrix Multiplication Optimization
             </a>
           </h1>
@@ -180,7 +186,7 @@ reducing array access sequential memory access cache locality parallelization Th
             </span>
             <span class="reading-time">
               <i class="fa-solid fa-clock" aria-hidden="true"></i>
-              11-minute read
+              12-minute read
             </span>
           </div>
           
@@ -532,12 +538,62 @@ benchmark a range of values. At first I had a bug that caused the computation to
 complete correctly (thus cleverly evading the unit tests) but
 distributed the rows unevenly among the threads, causing worse performance with
 a higher thread count. With the bug fixed, we get:</p>
-<p>XXX graph with separate line for each thread count</p>
-<p>The best performance is for 4 threads with a block size of XXX, for about a 7x
-improvement over our original, naive implementation.</p>
-<p>To summarize, here are the benchmarks of the major versions we tried out along
-the way:</p>
-<p>XXX table</p>
+<div class="mermaid">
+---
+config:
+  themeVariables:
+    xyChart:
+      plotColorPalette: '#3594CC, #EA801C, #8CC5E3, #F0B077'
+---
+xychart
+    title "Performance of parallel tiling"
+    x-axis "Block size" [16, 32, 64, 128, 256]
+    y-axis "Benchmark in ms" 0 --> 800
+    line "1 thread" [636, 456, 458, 499, 599]
+    line "2 threads" [348, 279, 221, 252, 314]
+    line "3 threads" [219, 219, 218, 223, 240]
+    line "4 threads" [207, 174, 184, 174, 179]
+
+</div>
+
+<p>As expected, performance increases roughly proportionally to thread count. Very
+small and very large blocks perform somewhat worse, but performance is fairly
+insensitive to block size in the optimal range. The optimal benchmark is 174ms,
+for about a about a 7x improvement over our initial approach. Not bad for a
+fairly high level implementation! It would be fun to pick up where we left off
+using C++ some day.</p>
+<p>In summary, here are the benchmarks of the major versions we tried out along the
+way:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Implementation</th>
+					<th>Benchmark</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Naive (nested arrays)</td>
+					<td>1200 ms</td>
+			</tr>
+			<tr>
+					<td>Naive (flat array)</td>
+					<td>906 ms</td>
+			</tr>
+			<tr>
+					<td>Naive (flat array + <code>transpose(b)</code>)</td>
+					<td>831 ms</td>
+			</tr>
+			<tr>
+					<td>Tiling</td>
+					<td>499 ms</td>
+			</tr>
+			<tr>
+					<td>Parallel (4 threads)</td>
+					<td>174 ms</td>
+			</tr>
+	</tbody>
+</table>
 
       </div>
 
@@ -621,8 +677,9 @@ the way:</p>
   </main>
 
   
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.13.0/dist/mermaid.min.js"
-    integrity="sha256-PiACvzM5B/rnwdaGC7x49dpBe8cLZPPSJoWBuguouWo=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.min.js"
+    integrity="sha256-WB7X10vZBI0OOpE2OSfXLvIpQtdyJUayf3zCnjU5Drg="
+    crossorigin="anonymous"></script>
   <script>
     mermaid.initialize({startOnLoad: true});
   </script>
@@ -630,7 +687,7 @@ the way:</p>
 
   
   
-  <script src="/js/coder.js"></script>
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
   
 
   

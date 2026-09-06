@@ -1,0 +1,13 @@
+{
+	"version": 3,
+	"file": "custom.css",
+	"sourceRoot": "/Users/lwassink/bin/blog",
+	"sources": [
+		"assets/scss/custom.scss"
+	],
+	"sourcesContent": [
+		"// My custom styles to override some coder settings\n\ntable {\n  border: 2px solid black;\n}\n\n"
+	],
+	"names": [],
+	"mappings": "AAEA,AAAA,KAAK,CAAC;EACJ,MAAM,EAAE,eAAe,GACxB"
+}

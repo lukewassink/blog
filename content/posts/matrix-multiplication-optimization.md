@@ -134,9 +134,10 @@ Multiplication stays exactly the same. This improves our runtime to 906ms,
 already a 25% improvement.
 
 Calculating each entry requires summing $n$ doubles. Currently we accumulate the
-sum in the product matrix. If we just accumulate the sum in a local variable and
-set the product matrix at the end of the loop, we shave off over a billion array
-accesses. This cuts our time further, down to 865ms.
+sum in the product matrix. Instead, if we accumulate the sum in a local variable
+and set the product matrix at the end of the loop, we shave off over a billion
+array accesses, allowing the JVM to utilize CPU registers and caches rather than
+writing to memory. This cuts our time further, down to 865ms.
 
 Finally, our memory access to `a` in the inner loop is nice and sequential
 because rows are stored sequentially in `FlatArray`. However, `b` is not so
@@ -244,7 +245,20 @@ that would allow the calculation to fit in the L1 cache, but CPUs are hard to
 reason about abstractly, and optimization is an experimental science. Better
 just to try out some different sizes:
 
-XXX
+{{<mermaid>}}
+---
+config:
+  themeVariables:
+    xyChart:
+      plotColorPalette: '#0000FF'
+---
+xychart
+    title "Performance of the tiling algorithm"
+    x-axis "Block size" [32, 64, 128, 256, 512]
+    y-axis "Benchmark in ms" 0 --> 1200
+    line [1056, 1052, 1008, 1035, 1073]
+{{</mermaid>}}
+
 
 And... it's worse :( After looking through some flame graphs, it turns out there
 are two issues:
@@ -261,10 +275,23 @@ more we nest, the harder it is for the JIT compiler to optimize (see
 To solve this, we can switch to while loops. The code is gets pretty ugly-check
 out the repo if you want to see it. However, it does fix the problem:
 
-XXX - graph
+{{<mermaid>}}
+---
+config:
+  themeVariables:
+    xyChart:
+      plotColorPalette: '#0000FF'
+---
+xychart
+    title "Performance of the tiling algorithm (without foreach)"
+    x-axis "Block size" [32, 64, 128, 256, 512]
+    y-axis "Benchmark in ms" 0 --> 1200
+    line [770, 499, 600, 696, 827]
+{{</mermaid>}}
 
-We now have an improvement of XXX% over the naive approach. This is as far as
-we'll go with a single thread. Time to parallelize!
+So the best time is 499 ms at a block size of 64, for a 58% reduction in runtime
+compared to the naive approach. This is as far as we'll go with a single thread.
+Time to parallelize!
 
 
 ## Parallel blocks
@@ -287,7 +314,8 @@ def computeBlockRow(i: Int): Unit =
     var k = 0
     while k < a.cols do
       var x = i
-      while x < min(i + blockSize, prod.rows) do
+      // Inner loops compute block multiplication
+      while x < min(i + blockSize, prod.rows) do 
         var y = j
         while y < min(j + blockSize, prod.cols) do
           var sum = 0.0
@@ -309,6 +337,16 @@ is responsible for. The details are fiddly and confusing because we have to
 handle the case where rows of blocks don't divide evenly among the threads;
 check the repo if you're interested.
 
+There is one concern: Apple M2s have a 128 byte cache line. This is the smallest
+chunk of data they can atomically access. If one core accesses a variable, and
+then another core accesses another variable in the same cache line, the first
+core's cache will be invalidated. This is called *false sharing*. Fortunately,
+in our case each thread is responsible for a contiguous region of hundreds of
+thousands of bytes. False sharing could only happing if thread 1 reached the end
+of it's data while thread 2 was at the very beginning of the following chunk of
+data. This should never happen (and it can only possible happen $t-1$ times for
+$t$ threads) so we're in the clear.
+
 In any case, all that remains is to run each thread asynchronously in a Scala
 `Future` and wait for them to fill in the results:
 
@@ -324,9 +362,9 @@ complete correctly (thus cleverly evading the unit tests) but
 distributed the rows unevenly among the threads, causing worse performance with
 a higher thread count. With the bug fixed, we get:
 
-XXX
+XXX graph with separate line for each thread count
 
-The best performance is for 4 threads with a block size of XXX, for a XXX%
+The best performance is for 4 threads with a block size of XXX, for about a 7x
 improvement over our original, naive implementation.
 
 To summarize, here are the benchmarks of the major versions we tried out along

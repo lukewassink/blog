@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
   <title>
   Matrix Multiplication Optimization · Luke Wassink
 </title>
@@ -44,7 +44,7 @@ of the computation in parallel.">
 	<meta name="twitter:description" content="Optimizing Matrix Multiplication Link to heading Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits significantly from some classic optimizations like:
 reducing array access sequential memory access cache locality parallelization There are also fancy algorithms that reduce the asymptotic complexity, but they are so complex they usually only show benefits for very large matrices, if at all. In any case, our plan will be to use the traditional algorithm for matrix multiplication and explore the benefits we can get from other changes like: how we store the matrices, what order we do the computations in, and running parts of the computation in parallel.">
 
-<meta property="og:url" content="https://lukewassink.com/posts/matrix-multiplication-optimization/">
+<meta property="og:url" content="http://localhost:1313/posts/matrix-multiplication-optimization/">
 	<meta property="og:site_name" content="Luke Wassink">
 	<meta property="og:title" content="Matrix Multiplication Optimization">
 	<meta property="og:description" content="Optimizing Matrix Multiplication Link to heading Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits significantly from some classic optimizations like:
@@ -61,7 +61,7 @@ reducing array access sequential memory access cache locality parallelization Th
 
 
 
-<link rel="canonical" href="https://lukewassink.com/posts/matrix-multiplication-optimization/">
+<link rel="canonical" href="http://localhost:1313/posts/matrix-multiplication-optimization/">
 
 
 <link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
@@ -71,7 +71,7 @@ reducing array access sequential memory access cache locality parallelization Th
 
   
   
-  <link rel="stylesheet" href="/css/coder.min.5e94c1acf7aa2066035cf2764ae3e4fe39db101d68b870f919966100d51fb861.css" integrity="sha256-XpTBrPeqIGYDXPJ2SuPk/jnbEB1ouHD5GZZhANUfuGE=" crossorigin="anonymous" media="screen" />
+  <link rel="stylesheet" href="/css/coder.css" media="screen">
 
 
 
@@ -81,7 +81,7 @@ reducing array access sequential memory access cache locality parallelization Th
   
     
     
-    <link rel="stylesheet" href="/css/coder-dark.min.ad48f476275974885bdc03d5251e3cdbe1678c54a63ff772376b0ed2adc468dd.css" integrity="sha256-rUj0didZdIhb3APVJR482&#43;FnjFSmP/dyN2sO0q3EaN0=" crossorigin="anonymous" media="screen" />
+    <link rel="stylesheet" href="/css/coder-dark.css" media="screen">
   
 
 
@@ -130,7 +130,7 @@ reducing array access sequential memory access cache locality parallelization Th
     <nav class="navigation">
   <section class="container">
     
-    <a class="navigation-title" href="https://lukewassink.com/">
+    <a class="navigation-title" href="http://localhost:1313/">
       Luke Wassink
     </a>
     
@@ -165,7 +165,7 @@ reducing array access sequential memory access cache locality parallelization Th
       <header>
         <div class="post-title">
           <h1 class="title">
-            <a class="title-link" href="https://lukewassink.com/posts/matrix-multiplication-optimization/">
+            <a class="title-link" href="http://localhost:1313/posts/matrix-multiplication-optimization/">
               Matrix Multiplication Optimization
             </a>
           </h1>
@@ -180,7 +180,7 @@ reducing array access sequential memory access cache locality parallelization Th
             </span>
             <span class="reading-time">
               <i class="fa-solid fa-clock" aria-hidden="true"></i>
-              10-minute read
+              11-minute read
             </span>
           </div>
           
@@ -335,9 +335,10 @@ entries. We can access and set the entres like so:</p>
 </span></span></code></pre></div><p>Multiplication stays exactly the same. This improves our runtime to 906ms,
 already a 25% improvement.</p>
 <p>Calculating each entry requires summing $n$ doubles. Currently we accumulate the
-sum in the product matrix. If we just accumulate the sum in a local variable and
-set the product matrix at the end of the loop, we shave off over a billion array
-accesses. This cuts our time further, down to 865ms.</p>
+sum in the product matrix. Instead, if we accumulate the sum in a local variable
+and set the product matrix at the end of the loop, we shave off over a billion
+array accesses, allowing the JVM to utilize CPU registers and caches rather than
+writing to memory. This cuts our time further, down to 865ms.</p>
 <p>Finally, our memory access to <code>a</code> in the inner loop is nice and sequential
 because rows are stored sequentially in <code>FlatArray</code>. However, <code>b</code> is not so
 lucky. It&rsquo;s skipping through in jumps of length 1024. Sequential memory access
@@ -425,7 +426,21 @@ should <code>blockSize</code> be? You could try to calculate the largest possibl
 that would allow the calculation to fit in the L1 cache, but CPUs are hard to
 reason about abstractly, and optimization is an experimental science. Better
 just to try out some different sizes:</p>
-<p>XXX</p>
+<div class="mermaid">
+---
+config:
+  themeVariables:
+    xyChart:
+      plotColorPalette: '#0000FF'
+---
+xychart
+    title "Performance of the tiling algorithm"
+    x-axis "Block size" [32, 64, 128, 256, 512]
+    y-axis "Benchmark in ms" 0 --> 1200
+    line [1056, 1052, 1008, 1035, 1073]
+
+</div>
+
 <p>And&hellip; it&rsquo;s worse :( After looking through some flame graphs, it turns out there
 are two issues:</p>
 <ol>
@@ -439,9 +454,24 @@ more we nest, the harder it is for the JIT compiler to optimize (see
 <a href="https://stackoverflow.com/questions/23693221/scala-iteratorforeach-performance-issue"  class="external-link" target="_blank" rel="noopener">here</a>).</p>
 <p>To solve this, we can switch to while loops. The code is gets pretty ugly-check
 out the repo if you want to see it. However, it does fix the problem:</p>
-<p>XXX - graph</p>
-<p>We now have an improvement of XXX% over the naive approach. This is as far as
-we&rsquo;ll go with a single thread. Time to parallelize!</p>
+<div class="mermaid">
+---
+config:
+  themeVariables:
+    xyChart:
+      plotColorPalette: '#0000FF'
+---
+xychart
+    title "Performance of the tiling algorithm (without foreach)"
+    x-axis "Block size" [32, 64, 128, 256, 512]
+    y-axis "Benchmark in ms" 0 --> 1200
+    line [770, 499, 600, 696, 827]
+
+</div>
+
+<p>So the best time is 499 ms at a block size of 64, for a 58% reduction in runtime
+compared to the naive approach. This is as far as we&rsquo;ll go with a single thread.
+Time to parallelize!</p>
 <h2 id="parallel-blocks">
   Parallel blocks
   <a class="heading-link" href="#parallel-blocks">
@@ -464,7 +494,8 @@ now. The code to compute one row of blocks is:</p>
 </span></span><span style="display:flex;"><span>    <span style="color:#859900">var</span> <span style="color:#268bd2">k</span> <span style="color:#859900">=</span> <span style="color:#2aa198;font-weight:bold">0</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#859900">while</span> <span style="color:#268bd2">k</span> &lt; <span style="color:#268bd2">a</span>.<span style="color:#268bd2">cols</span> <span style="color:#859900">do</span>
 </span></span><span style="display:flex;"><span>      <span style="color:#859900">var</span> <span style="color:#268bd2">x</span> <span style="color:#859900">=</span> <span style="color:#268bd2">i</span>
-</span></span><span style="display:flex;"><span>      <span style="color:#859900">while</span> <span style="color:#268bd2">x</span> &lt; <span style="color:#268bd2">min</span>(<span style="color:#268bd2">i</span> + <span style="color:#268bd2">blockSize</span>, <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">rows</span>) <span style="color:#859900">do</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#93a1a1;font-style:italic">// Inner loops compute block multiplication
+</span></span></span><span style="display:flex;"><span>      <span style="color:#859900">while</span> <span style="color:#268bd2">x</span> &lt; <span style="color:#268bd2">min</span>(<span style="color:#268bd2">i</span> + <span style="color:#268bd2">blockSize</span>, <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">rows</span>) <span style="color:#859900">do</span> 
 </span></span><span style="display:flex;"><span>        <span style="color:#859900">var</span> <span style="color:#268bd2">y</span> <span style="color:#859900">=</span> <span style="color:#268bd2">j</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#859900">while</span> <span style="color:#268bd2">y</span> &lt; <span style="color:#268bd2">min</span>(<span style="color:#268bd2">j</span> + <span style="color:#268bd2">blockSize</span>, <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">cols</span>) <span style="color:#859900">do</span>
 </span></span><span style="display:flex;"><span>          <span style="color:#859900">var</span> <span style="color:#268bd2">sum</span> <span style="color:#859900">=</span> <span style="color:#2aa198;font-weight:bold">0.0</span>
@@ -482,6 +513,15 @@ each thread with an integer <code>t</code> and write a function <code>computeRow
 is responsible for. The details are fiddly and confusing because we have to
 handle the case where rows of blocks don&rsquo;t divide evenly among the threads;
 check the repo if you&rsquo;re interested.</p>
+<p>There is one concern: Apple M2s have a 128 byte cache line. This is the smallest
+chunk of data they can atomically access. If one core accesses a variable, and
+then another core accesses another variable in the same cache line, the first
+core&rsquo;s cache will be invalidated. This is called <em>false sharing</em>. Fortunately,
+in our case each thread is responsible for a contiguous region of hundreds of
+thousands of bytes. False sharing could only happing if thread 1 reached the end
+of it&rsquo;s data while thread 2 was at the very beginning of the following chunk of
+data. This should never happen (and it can only possible happen $t-1$ times for
+$t$ threads) so we&rsquo;re in the clear.</p>
 <p>In any case, all that remains is to run each thread asynchronously in a Scala
 <code>Future</code> and wait for them to fill in the results:</p>
 <div class="highlight"><pre tabindex="0" style="color:#586e75;background-color:#fdf6e3;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-scala" data-lang="scala"><span style="display:flex;"><span><span style="color:#859900">val</span> <span style="color:#268bd2">futures</span> <span style="color:#859900">=</span> (<span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">threadCount</span>).<span style="color:#268bd2">map</span>(<span style="color:#268bd2">t</span> <span style="color:#859900">=&gt;</span> <span style="color:#cb4b16">Future</span>{ <span style="color:#268bd2">computeRowsForThread</span>(<span style="color:#268bd2">t</span>) })
@@ -492,8 +532,8 @@ benchmark a range of values. At first I had a bug that caused the computation to
 complete correctly (thus cleverly evading the unit tests) but
 distributed the rows unevenly among the threads, causing worse performance with
 a higher thread count. With the bug fixed, we get:</p>
-<p>XXX</p>
-<p>The best performance is for 4 threads with a block size of XXX, for a XXX%
+<p>XXX graph with separate line for each thread count</p>
+<p>The best performance is for 4 threads with a block size of XXX, for about a 7x
 improvement over our original, naive implementation.</p>
 <p>To summarize, here are the benchmarks of the major versions we tried out along
 the way:</p>
@@ -581,10 +621,16 @@ the way:</p>
   </main>
 
   
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.13.0/dist/mermaid.min.js"
+    integrity="sha256-PiACvzM5B/rnwdaGC7x49dpBe8cLZPPSJoWBuguouWo=" crossorigin="anonymous"></script>
+  <script>
+    mermaid.initialize({startOnLoad: true});
+  </script>
+  
 
   
   
-  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  <script src="/js/coder.js"></script>
   
 
   

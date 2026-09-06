@@ -119,9 +119,9 @@ better.
 ## Initial improvements
 
 Let's begin with some low hanging fruit. We are storing our matrices as nested
-arrays. This adds memory overhead and extra array accesses. Instead, let's
-unwind the matrix in a single, flat array with $n^2$ entries. We can access and
-set the entres like so:
+arrays. This adds pointer indirection and forces the CPU to chase references on
+the heap. Instead, let's unwind the matrix in a single, flat array with $n^2$
+entries. We can access and set the entres like so:
 
 ```scala
 class FlatArray(val data: Array[Double], val rows: Int, val cols: Int):
@@ -252,6 +252,11 @@ are two issues:
 1. Scala ranges are significantly slower when you set an increment.
 1. `forEach` loops seem fine on their own, but when you nest them too deeply,
    they slow down dramatically.
+
+This turns out to be a known issue with Scala. One reason for the slowdown is that each nested `forEach`
+runs its code in an anonymous function, which caries its own overhead, and the
+more we nest, the harder it is for the JIT compiler to optimize (see
+[here](https://stackoverflow.com/questions/23693221/scala-iteratorforeach-performance-issue)).
 
 To solve this, we can switch to while loops. The code is gets pretty ugly-check
 out the repo if you want to see it. However, it does fix the problem:

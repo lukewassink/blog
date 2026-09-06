@@ -325,9 +325,9 @@ better.</p>
   </a>
 </h2>
 <p>Let&rsquo;s begin with some low hanging fruit. We are storing our matrices as nested
-arrays. This adds memory overhead and extra array accesses. Instead, let&rsquo;s
-unwind the matrix in a single, flat array with $n^2$ entries. We can access and
-set the entres like so:</p>
+arrays. This adds pointer indirection and forces the CPU to chase references on
+the heap. Instead, let&rsquo;s unwind the matrix in a single, flat array with $n^2$
+entries. We can access and set the entres like so:</p>
 <div class="highlight"><pre tabindex="0" style="color:#586e75;background-color:#fdf6e3;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-scala" data-lang="scala"><span style="display:flex;"><span><span style="color:#859900">class</span> <span style="color:#cb4b16">FlatArray</span>(<span style="color:#859900">val</span> <span style="color:#268bd2">data</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Array</span>[<span style="color:#859900;font-weight:bold">Double</span>], <span style="color:#859900">val</span> <span style="color:#268bd2">rows</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Int</span>, <span style="color:#859900">val</span> <span style="color:#268bd2">cols</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Int</span>)<span style="color:#859900">:</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#859900;font-weight:bold">def</span> <span style="color:#859900;font-weight:bold">apply</span>(<span style="color:#859900;font-weight:bold">i:</span> <span style="color:#859900;font-weight:bold">Int</span>, <span style="color:#859900;font-weight:bold">j:</span> <span style="color:#859900;font-weight:bold">Int</span>)<span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Double</span> = <span style="color:#268bd2">data</span>(<span style="color:#268bd2">i</span> * <span style="color:#268bd2">cols</span> + <span style="color:#268bd2">j</span>)
 </span></span><span style="display:flex;"><span>
@@ -433,6 +433,10 @@ are two issues:</p>
 <li><code>forEach</code> loops seem fine on their own, but when you nest them too deeply,
 they slow down dramatically.</li>
 </ol>
+<p>This turns out to be a known issue with Scala. One reason for the slowdown is that each nested <code>forEach</code>
+runs its code in an anonymous function, which caries its own overhead, and the
+more we nest, the harder it is for the JIT compiler to optimize (see
+<a href="https://stackoverflow.com/questions/23693221/scala-iteratorforeach-performance-issue"  class="external-link" target="_blank" rel="noopener">here</a>).</p>
 <p>To solve this, we can switch to while loops. The code is gets pretty ugly-check
 out the repo if you want to see it. However, it does fix the problem:</p>
 <p>XXX - graph</p>
@@ -564,8 +568,6 @@ the way:</p>
     <footer class="footer">
   <section class="container">
     ©
-    
-      2019 -
     
     2026
      Luke Wassink 

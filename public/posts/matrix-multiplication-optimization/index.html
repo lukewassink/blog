@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<head>
   <title>
   Matrix Multiplication Optimization · Luke Wassink
 </title>
@@ -29,17 +29,12 @@ sequential memory access
 cache locality
 parallelization
 
-This post lays out my path to a somewhat optimized matrix multiplication
-algorithm.  The parameters of the project were:
-
-It shouldn&rsquo;t take to long. I spent about a week.
-Use the classic multiplication algorithm and just optimize execution. Don&rsquo;t
-use a fancy, complicated algorithm like XXX.
-Learn benchmarking and profiling
-
-I&rsquo;ve been working in Scala recently, so that&rsquo;s what I used.  Benchmarking and
-flame graphs were generated with the Java MicroBenchmarking Harness (JMH) XXX.
-You can find all the code an run it for yourself at XXX.">
+There are also fancy algorithms that reduce the asymptotic complexity, but they
+are so complex they usually only show benefits for very large matrices, if at
+all. In any case, our plan will be to use the traditional algorithm for matrix
+multiplication and explore the benefits we can get from other changes like: how
+we store the matrices, what order we do the computations in, and running parts
+of the computation in parallel.">
 <meta name="keywords" content="blog,developer,personal,engineer">
 
 
@@ -47,15 +42,13 @@ You can find all the code an run it for yourself at XXX.">
 	<meta name="twitter:card" content="summary">
 	<meta name="twitter:title" content="Matrix Multiplication Optimization">
 	<meta name="twitter:description" content="Optimizing Matrix Multiplication Link to heading Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits significantly from some classic optimizations like:
-reducing array access sequential memory access cache locality parallelization This post lays out my path to a somewhat optimized matrix multiplication algorithm. The parameters of the project were:
-It shouldn’t take to long. I spent about a week. Use the classic multiplication algorithm and just optimize execution. Don’t use a fancy, complicated algorithm like XXX. Learn benchmarking and profiling I’ve been working in Scala recently, so that’s what I used. Benchmarking and flame graphs were generated with the Java MicroBenchmarking Harness (JMH) XXX. You can find all the code an run it for yourself at XXX.">
+reducing array access sequential memory access cache locality parallelization There are also fancy algorithms that reduce the asymptotic complexity, but they are so complex they usually only show benefits for very large matrices, if at all. In any case, our plan will be to use the traditional algorithm for matrix multiplication and explore the benefits we can get from other changes like: how we store the matrices, what order we do the computations in, and running parts of the computation in parallel.">
 
-<meta property="og:url" content="http://localhost:1313/posts/matrix-multiplication-optimization/">
+<meta property="og:url" content="https://lukewassink.com/posts/matrix-multiplication-optimization/">
 	<meta property="og:site_name" content="Luke Wassink">
 	<meta property="og:title" content="Matrix Multiplication Optimization">
 	<meta property="og:description" content="Optimizing Matrix Multiplication Link to heading Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits significantly from some classic optimizations like:
-reducing array access sequential memory access cache locality parallelization This post lays out my path to a somewhat optimized matrix multiplication algorithm. The parameters of the project were:
-It shouldn’t take to long. I spent about a week. Use the classic multiplication algorithm and just optimize execution. Don’t use a fancy, complicated algorithm like XXX. Learn benchmarking and profiling I’ve been working in Scala recently, so that’s what I used. Benchmarking and flame graphs were generated with the Java MicroBenchmarking Harness (JMH) XXX. You can find all the code an run it for yourself at XXX.">
+reducing array access sequential memory access cache locality parallelization There are also fancy algorithms that reduce the asymptotic complexity, but they are so complex they usually only show benefits for very large matrices, if at all. In any case, our plan will be to use the traditional algorithm for matrix multiplication and explore the benefits we can get from other changes like: how we store the matrices, what order we do the computations in, and running parts of the computation in parallel.">
 	<meta property="og:locale" content="en_us">
 	<meta property="og:type" content="article">
 		<meta property="article:section" content="posts">
@@ -68,7 +61,7 @@ It shouldn’t take to long. I spent about a week. Use the classic multiplicatio
 
 
 
-<link rel="canonical" href="http://localhost:1313/posts/matrix-multiplication-optimization/">
+<link rel="canonical" href="https://lukewassink.com/posts/matrix-multiplication-optimization/">
 
 
 <link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
@@ -78,7 +71,7 @@ It shouldn’t take to long. I spent about a week. Use the classic multiplicatio
 
   
   
-  <link rel="stylesheet" href="/css/coder.css" media="screen">
+  <link rel="stylesheet" href="/css/coder.min.5e94c1acf7aa2066035cf2764ae3e4fe39db101d68b870f919966100d51fb861.css" integrity="sha256-XpTBrPeqIGYDXPJ2SuPk/jnbEB1ouHD5GZZhANUfuGE=" crossorigin="anonymous" media="screen" />
 
 
 
@@ -88,7 +81,7 @@ It shouldn’t take to long. I spent about a week. Use the classic multiplicatio
   
     
     
-    <link rel="stylesheet" href="/css/coder-dark.css" media="screen">
+    <link rel="stylesheet" href="/css/coder-dark.min.ad48f476275974885bdc03d5251e3cdbe1678c54a63ff772376b0ed2adc468dd.css" integrity="sha256-rUj0didZdIhb3APVJR482&#43;FnjFSmP/dyN2sO0q3EaN0=" crossorigin="anonymous" media="screen" />
   
 
 
@@ -137,7 +130,7 @@ It shouldn’t take to long. I spent about a week. Use the classic multiplicatio
     <nav class="navigation">
   <section class="container">
     
-    <a class="navigation-title" href="http://localhost:1313/">
+    <a class="navigation-title" href="https://lukewassink.com/">
       Luke Wassink
     </a>
     
@@ -172,7 +165,7 @@ It shouldn’t take to long. I spent about a week. Use the classic multiplicatio
       <header>
         <div class="post-title">
           <h1 class="title">
-            <a class="title-link" href="http://localhost:1313/posts/matrix-multiplication-optimization/">
+            <a class="title-link" href="https://lukewassink.com/posts/matrix-multiplication-optimization/">
               Matrix Multiplication Optimization
             </a>
           </h1>
@@ -230,22 +223,23 @@ significantly from some classic optimizations like:</p>
 <li>cache locality</li>
 <li>parallelization</li>
 </ul>
-<p>This post lays out my path to a somewhat optimized matrix multiplication
-algorithm.  The parameters of the project were:</p>
-<ul>
-<li>It shouldn&rsquo;t take to long. I spent about a week.</li>
-<li>Use the classic multiplication algorithm and just optimize execution. Don&rsquo;t
-use a fancy, complicated algorithm like XXX.</li>
-<li>Learn benchmarking and profiling</li>
-</ul>
+<p>There are also fancy algorithms that reduce the asymptotic complexity, but they
+are so complex they usually only show benefits for very large matrices, if at
+all. In any case, our plan will be to use the traditional algorithm for matrix
+multiplication and explore the benefits we can get from other changes like: how
+we store the matrices, what order we do the computations in, and running parts
+of the computation in parallel.</p>
 <p>I&rsquo;ve been working in Scala recently, so that&rsquo;s what I used.  Benchmarking and
-flame graphs were generated with the Java MicroBenchmarking Harness (JMH) XXX.
-You can find all the code an run it for yourself at XXX.</p>
+flame graphs were generated with the <a href="https://github.com/openjdk/jmh"  class="external-link" target="_blank" rel="noopener">Java Microbenchmark
+Harness</a> (JMH).
+You can find all the code for this project and run it for yourself at
+<a href="https://github.com/lukewassink/matmult"  class="external-link" target="_blank" rel="noopener">github.com/lukewassink/matmult</a>.</p>
 <p>A disclaimer for Scala programmers: I&rsquo;ve written plenty of pure functions in
-Scala. I like type classes and monads as much as the next guy. For this project,
-and wanted to implement classical matrix multiplication and not worry about
-trying to understand the overhead of higher-order functions, so this code is
-imperative and uses lots of <code>var</code>s ;)</p>
+Scala. I like type classes and monads as much as the next guy (in fact, look out
+for an upcoming blog post on that very topic). For this project, I wanted to
+implement classical matrix multiplication and not worry about trying to
+understand the overhead of higher-order functions, so this code is imperative
+and uses lots of <code>var</code>s ;)</p>
 <h2 id="matrix-multiplication">
   Matrix multiplication
   <a class="heading-link" href="#matrix-multiplication">
@@ -273,12 +267,15 @@ $$</p>
 <p>Define $c = ab$ to be the product matrix. Then $c$ has $n$ rows and $m$ columns,
 and its entries are defined by the formula</p>
 <p>$$c_{i,j} = a_{i, 1} b_{1,j} + a_{i,2} b_{2,j} + \dots + a_{i,l} b_{l,j}.$$</p>
-<p>To simplify benchmarking, we will focus on square, $n\times n$ matrices. The
-product has $n^2$ entries, each of which requires $n$ operations to calculate,
-so time should be $\mathcal{O}(n^3)$.</p>
-<p>There are more sophisticated matrix multiplication algorithms such as XXX, which
-preforms YYY operations, but we will not implement them. Instead, we will focus
-on the simple, standard algorithm above.</p>
+<p>To simplify the math so we can focus on optimization, this writeup will focus on
+square, $n\times n$ matrices.  The code I wrote should handle matrices of any
+shape, so check it out if you want details. The product of two $n\times n$
+matrices has $n^2$ entries, each of which requires $\mathcal{O}(n)$ operations to calculate
+for a total of $\mathcal{O}(n^3)$ operations.</p>
+<p>There are more sophisticated approaches such as <a href="https://en.wikipedia.org/wiki/Strassen_algorithm"  class="external-link" target="_blank" rel="noopener">Strassen&rsquo;s
+algorithm</a>, which only
+requires $\mathcal{O}(n^{\log_2(7)})$ operations, but as mentioned above, we will
+not implement them.</p>
 <h2 id="benchmarking">
   Benchmarking
   <a class="heading-link" href="#benchmarking">
@@ -309,17 +306,16 @@ cache, 16 MB shared L2 cache</li>
   </a>
 </h2>
 <p>The first question: how to represent our matrices? Well, a matrix is a list of
-rows (or columns, but let&rsquo;s stick with rows). That sounds like a list of lists,
-so let&rsquo;s use nested arrays:</p>
+rows (or columns, but let&rsquo;s stick with rows). This sounds like a job for nested
+arrays:</p>
 <div class="highlight"><pre tabindex="0" style="color:#586e75;background-color:#fdf6e3;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-scala" data-lang="scala"><span style="display:flex;"><span><span style="color:#859900">class</span> <span style="color:#cb4b16">NestedArray</span>(<span style="color:#859900">val</span> <span style="color:#268bd2">data</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Array</span>[<span style="color:#859900;font-weight:bold">Array</span>[<span style="color:#859900;font-weight:bold">Double</span>]])
 </span></span></code></pre></div><p>Let&rsquo;s define multiplication the simplest way we can:</p>
 <div class="highlight"><pre tabindex="0" style="color:#586e75;background-color:#fdf6e3;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-scala" data-lang="scala"><span style="display:flex;"><span><span style="color:#859900">for</span> <span style="color:#268bd2">i</span> <span style="color:#859900">&lt;-</span> <span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">a</span>.<span style="color:#268bd2">rows</span> <span style="color:#859900">do</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#859900">for</span> <span style="color:#268bd2">j</span> <span style="color:#859900">&lt;-</span> <span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">b</span>.<span style="color:#268bd2">cols</span> <span style="color:#859900">do</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#859900">for</span> <span style="color:#268bd2">k</span> <span style="color:#859900">&lt;-</span> <span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">a</span>.<span style="color:#268bd2">cols</span> <span style="color:#859900">do</span>
 </span></span><span style="display:flex;"><span>      <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">set</span>(<span style="color:#268bd2">i</span>, <span style="color:#268bd2">j</span>, <span style="color:#268bd2">a</span>(<span style="color:#268bd2">i</span>, <span style="color:#268bd2">k</span>) * <span style="color:#268bd2">b</span>(<span style="color:#268bd2">k</span>, <span style="color:#268bd2">j</span>)) <span style="color:#93a1a1;font-style:italic">// This set&#39;s the (i, j) entry of prod
-</span></span></span></code></pre></div><p>For an $n\times n$ matrix this is $O(n^3)$ operations. In our case $n^3 =
-1,073,741,824$.</p>
-<p>Running the benchmark, the matrix multiplication takes XXX, but we can do much
+</span></span></span></code></pre></div><p>As noted above, this is $O(n^3)$ operations. In our case $n^3 = 1,073,741,824$.
+Running the benchmark, the matrix multiplication takes 1200ms, but we can do much
 better.</p>
 <h2 id="initial-improvements">
   Initial improvements
@@ -331,16 +327,17 @@ better.</p>
 <p>Let&rsquo;s begin with some low hanging fruit. We are storing our matrices as nested
 arrays. This adds memory overhead and extra array accesses. Instead, let&rsquo;s
 unwind the matrix in a single, flat array with $n^2$ entries. We can access and
-set the $(i, j)$ entry like so:</p>
+set the entres like so:</p>
 <div class="highlight"><pre tabindex="0" style="color:#586e75;background-color:#fdf6e3;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-scala" data-lang="scala"><span style="display:flex;"><span><span style="color:#859900">class</span> <span style="color:#cb4b16">FlatArray</span>(<span style="color:#859900">val</span> <span style="color:#268bd2">data</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Array</span>[<span style="color:#859900;font-weight:bold">Double</span>], <span style="color:#859900">val</span> <span style="color:#268bd2">rows</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Int</span>, <span style="color:#859900">val</span> <span style="color:#268bd2">cols</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Int</span>)<span style="color:#859900">:</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#859900;font-weight:bold">def</span> <span style="color:#859900;font-weight:bold">apply</span>(<span style="color:#859900;font-weight:bold">i:</span> <span style="color:#859900;font-weight:bold">Int</span>, <span style="color:#859900;font-weight:bold">j:</span> <span style="color:#859900;font-weight:bold">Int</span>)<span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Double</span> = <span style="color:#268bd2">data</span>(<span style="color:#268bd2">i</span> * <span style="color:#268bd2">cols</span> + <span style="color:#268bd2">j</span>)
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>  <span style="color:#859900">def</span> <span style="color:#268bd2">set</span>(<span style="color:#268bd2">i</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Int</span>, <span style="color:#268bd2">j</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Int</span>, <span style="color:#268bd2">d</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Double</span>)<span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Unit</span> = <span style="color:#268bd2">data</span>(<span style="color:#268bd2">i</span> * <span style="color:#268bd2">cols</span> + <span style="color:#268bd2">j</span>) <span style="color:#859900">=</span> <span style="color:#268bd2">d</span>
-</span></span></code></pre></div><p>Multiplication stays exactly the same. This improves our runtime to XXX.</p>
+</span></span></code></pre></div><p>Multiplication stays exactly the same. This improves our runtime to 906ms,
+already a 25% improvement.</p>
 <p>Calculating each entry requires summing $n$ doubles. Currently we accumulate the
 sum in the product matrix. If we just accumulate the sum in a local variable and
 set the product matrix at the end of the loop, we shave off over a billion array
-accesses. This cuts our time further, down to XXX.</p>
+accesses. This cuts our time further, down to 865ms.</p>
 <p>Finally, our memory access to <code>a</code> in the inner loop is nice and sequential
 because rows are stored sequentially in <code>FlatArray</code>. However, <code>b</code> is not so
 lucky. It&rsquo;s skipping through in jumps of length 1024. Sequential memory access
@@ -351,7 +348,7 @@ is faster, so we&rsquo;d like to fix this. The solution is to take the transpose
 </span></span><span style="display:flex;"><span>  <span style="color:#859900">for</span> <span style="color:#268bd2">i</span> <span style="color:#859900">&lt;-</span> <span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">a</span>.<span style="color:#268bd2">cols</span> <span style="color:#859900">do</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#859900">for</span> <span style="color:#268bd2">j</span> <span style="color:#859900">&lt;-</span> <span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">a</span>.<span style="color:#268bd2">rows</span> <span style="color:#859900">do</span>
 </span></span><span style="display:flex;"><span>      <span style="color:#268bd2">t</span>.<span style="color:#268bd2">set</span>(<span style="color:#268bd2">i</span>, <span style="color:#268bd2">j</span>, <span style="color:#268bd2">a</span>(<span style="color:#268bd2">j</span>, <span style="color:#268bd2">i</span>))
-</span></span><span style="display:flex;"><span><span style="color:#268bd2">t</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#859900">return</span> <span style="color:#268bd2">t</span>
 </span></span></code></pre></div><p>This along with the previous improvements, means that multiplication now looks
 like:</p>
 <div class="highlight"><pre tabindex="0" style="color:#586e75;background-color:#fdf6e3;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-scala" data-lang="scala"><span style="display:flex;"><span><span style="color:#859900">for</span> <span style="color:#268bd2">i</span> <span style="color:#859900">&lt;-</span> <span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">a</span>.<span style="color:#268bd2">rows</span> <span style="color:#859900">do</span>
@@ -360,7 +357,7 @@ like:</p>
 </span></span><span style="display:flex;"><span>    <span style="color:#859900">for</span> <span style="color:#268bd2">k</span> <span style="color:#859900">&lt;-</span> <span style="color:#2aa198;font-weight:bold">0</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">a</span>.<span style="color:#268bd2">cols</span> <span style="color:#859900">do</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#268bd2">sum</span> <span style="color:#859900">=</span> <span style="color:#268bd2">sum</span> + <span style="color:#268bd2">a</span>(<span style="color:#268bd2">i</span>, <span style="color:#268bd2">k</span>) * <span style="color:#268bd2">bTranspose</span>(<span style="color:#268bd2">j</span>, <span style="color:#268bd2">k</span>)
 </span></span><span style="display:flex;"><span>    <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">set</span>(<span style="color:#268bd2">i</span>, <span style="color:#268bd2">j</span>, <span style="color:#268bd2">sum</span>)
-</span></span></code></pre></div><p>This brings the runtime down still further, to XXX, an improvement of XXX% over
+</span></span></code></pre></div><p>This brings the runtime down still further, to 831ms, an improvement of 31% over
 our initial, naive implementation. Further progress calls for more drastic
 action.</p>
 <h2 id="tiling">
@@ -370,12 +367,12 @@ action.</p>
     <span class="sr-only">Link to heading</span>
   </a>
 </h2>
-<p>So far we&rsquo;ve mostly optimized for RAM, but that&rsquo;s just one level of the CPU&rsquo;s
-memory hierarchy. Each core also has an L1 cache, and accessing it can be one
-hundred times faster than memory access. The CPU will try to keep recently used
-data there, but if we keep asking for different data, that won&rsquo;t help.</p>
-<p>Here we calculate $c_{1,1}$ using the first row of <code>a</code> and the first column
-of <code>b</code>. Then we move on the $c_{1,2}$ and ask for the second column of <code>b</code>,
+<p>So far we&rsquo;ve mostly optimized for RAM access, but that&rsquo;s just one level of the
+CPU&rsquo;s memory hierarchy. Each core also has an L1 cache, and accessing it can be
+over a hundred times faster than memory access. The CPU will try to keep recently
+used data there, but if we keep asking for different data, that won&rsquo;t help.</p>
+<p>The above code calculates $c_{1,1}$ using the first row of <code>a</code> and the first column
+of <code>b</code>. Then it moves on the $c_{1,2}$ and asks for the second column of <code>b</code>,
 and so on. This means our data doesn&rsquo;t get to stick around in the cache for very
 long. By the time we get to $c_{2, 1}$ and want the first column of <code>b</code>
 again, it&rsquo;s long gone from the cache.</p>
@@ -404,7 +401,7 @@ $$</p>
 multiplication. This allows us to write matrix multiplication in two steps:
 first multiply the individual blocks, then multiply the matrices of blocks. For
 purposes of calculating entries of $c$, this amounts to breaking our sum into an
-inner an outer sum:</p>
+inner and an outer sum:</p>
 <p>$$
 c_{i,j} = \sum_{x = 1}^m\sum_{k = 1}^d a_{i, xd + k}b_{xd + k, j}.
 $$</p>
@@ -423,10 +420,11 @@ cache locality.</p>
 </span></span><span style="display:flex;"><span>          <span style="color:#859900">for</span> <span style="color:#268bd2">z</span> <span style="color:#859900">&lt;-</span> <span style="color:#268bd2">k</span> <span style="color:#268bd2">until</span> <span style="color:#268bd2">min</span>(<span style="color:#268bd2">k</span> + <span style="color:#268bd2">blockSize</span>, <span style="color:#268bd2">a</span>.<span style="color:#268bd2">cols</span>) <span style="color:#859900">do</span>
 </span></span><span style="display:flex;"><span>            <span style="color:#268bd2">sum</span> <span style="color:#859900">=</span> <span style="color:#268bd2">sum</span> + <span style="color:#268bd2">a</span>(<span style="color:#268bd2">x</span>, <span style="color:#268bd2">z</span>) * <span style="color:#268bd2">b</span>(<span style="color:#268bd2">z</span>, <span style="color:#268bd2">y</span>)
 </span></span><span style="display:flex;"><span>          <span style="color:#268bd2">prod</span>.<span style="color:#268bd2">set</span>(<span style="color:#268bd2">x</span>, <span style="color:#268bd2">y</span>, <span style="color:#268bd2">prod</span>(<span style="color:#268bd2">x</span>, <span style="color:#268bd2">y</span>) + <span style="color:#268bd2">sum</span>)
-</span></span></code></pre></div><p>The remaining question is: how big should <code>blockSize</code> be? You could try to
-calculate the largest possible block that would allow the calculation to fit in
-the L1 cache, but CPUs are hard to reason about. Better just to experiment.
-Trying a range of block sizes, we get the following times:</p>
+</span></span></code></pre></div><p>It&rsquo;s not pretty, but it might be fast. The remaining question is: how big
+should <code>blockSize</code> be? You could try to calculate the largest possible block
+that would allow the calculation to fit in the L1 cache, but CPUs are hard to
+reason about abstractly, and optimization is an experimental science. Better
+just to try out some different sizes:</p>
 <p>XXX</p>
 <p>And&hellip; it&rsquo;s worse :( After looking through some flame graphs, it turns out there
 are two issues:</p>
@@ -584,7 +582,7 @@ the way:</p>
 
   
   
-  <script src="/js/coder.js"></script>
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
   
 
   

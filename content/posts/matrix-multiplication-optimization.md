@@ -18,23 +18,25 @@ significantly from some classic optimizations like:
 - cache locality
 - parallelization
 
-This post lays out my path to a somewhat optimized matrix multiplication
-algorithm.  The parameters of the project were:
-
-- It shouldn't take to long. I spent about a week.
-- Use the classic multiplication algorithm and just optimize execution. Don't
-    use a fancy, complicated algorithm like XXX.
-- Learn benchmarking and profiling
+There are also fancy algorithms that reduce the asymptotic complexity, but they
+are so complex they usually only show benefits for very large matrices, if at
+all. In any case, our plan will be to use the traditional algorithm for matrix
+multiplication and explore the benefits we can get from other changes like: how
+we store the matrices, what order we do the computations in, and running parts
+of the computation in parallel.
 
 I've been working in Scala recently, so that's what I used.  Benchmarking and
-flame graphs were generated with the Java MicroBenchmarking Harness (JMH) XXX.
-You can find all the code an run it for yourself at XXX.
+flame graphs were generated with the [Java Microbenchmark
+Harness](https://github.com/openjdk/jmh) (JMH).
+You can find all the code for this project and run it for yourself at
+[github.com/lukewassink/matmult](https://github.com/lukewassink/matmult).
 
 A disclaimer for Scala programmers: I've written plenty of pure functions in
-Scala. I like type classes and monads as much as the next guy. For this project,
-and wanted to implement classical matrix multiplication and not worry about
-trying to understand the overhead of higher-order functions, so this code is
-imperative and uses lots of `var`s ;)
+Scala. I like type classes and monads as much as the next guy (in fact, look out
+for an upcoming blog post on that very topic). For this project, I wanted to
+implement classical matrix multiplication and not worry about trying to
+understand the overhead of higher-order functions, so this code is imperative
+and uses lots of `var`s ;)
 
 ## Matrix multiplication
 
@@ -62,13 +64,16 @@ and its entries are defined by the formula
 
 $$c_{i,j} = a_{i, 1} b_{1,j} + a_{i,2} b_{2,j} + \dots + a_{i,l} b_{l,j}.$$
 
-To simplify benchmarking, we will focus on square, $n\times n$ matrices. The
-product has $n^2$ entries, each of which requires $n$ operations to calculate,
-so time should be $\mathcal{O}(n^3)$.
+To simplify the math so we can focus on optimization, this writeup will focus on
+square, $n\times n$ matrices.  The code I wrote should handle matrices of any
+shape, so check it out if you want details. The product of two $n\times n$
+matrices has $n^2$ entries, each of which requires $\mathcal{O}(n)$ operations to calculate
+for a total of $\mathcal{O}(n^3)$ operations.
 
-There are more sophisticated matrix multiplication algorithms such as XXX, which
-preforms YYY operations, but we will not implement them. Instead, we will focus
-on the simple, standard algorithm above.
+There are more sophisticated approaches such as [Strassen's
+algorithm](https://en.wikipedia.org/wiki/Strassen_algorithm), which only
+requires $\mathcal{O}(n^{\log_2(7)})$ operations, but as mentioned above, we will
+not implement them.
 
 
 ## Benchmarking
@@ -90,8 +95,8 @@ All the tests were run on my MacBook Air with:
 ## Naive matrix multiplication
 
 The first question: how to represent our matrices? Well, a matrix is a list of
-rows (or columns, but let's stick with rows). That sounds like a list of lists,
-so let's use nested arrays:
+rows (or columns, but let's stick with rows). This sounds like a job for nested
+arrays:
 
 ```scala
 class NestedArray(val data: Array[Array[Double]])
@@ -106,10 +111,8 @@ for i <- 0 until a.rows do
       prod.set(i, j, a(i, k) * b(k, j)) // This set's the (i, j) entry of prod
 ```
 
-For an $n\times n$ matrix this is $O(n^3)$ operations. In our case $n^3 =
-1,073,741,824$.
-
-Running the benchmark, the matrix multiplication takes XXX, but we can do much
+As noted above, this is $O(n^3)$ operations. In our case $n^3 = 1,073,741,824$.
+Running the benchmark, the matrix multiplication takes 1200ms, but we can do much
 better.
 
 
@@ -118,7 +121,7 @@ better.
 Let's begin with some low hanging fruit. We are storing our matrices as nested
 arrays. This adds memory overhead and extra array accesses. Instead, let's
 unwind the matrix in a single, flat array with $n^2$ entries. We can access and
-set the $(i, j)$ entry like so:
+set the entres like so:
 
 ```scala
 class FlatArray(val data: Array[Double], val rows: Int, val cols: Int):
@@ -127,12 +130,13 @@ class FlatArray(val data: Array[Double], val rows: Int, val cols: Int):
   def set(i: Int, j: Int, d: Double): Unit = data(i * cols + j) = d
 ```
 
-Multiplication stays exactly the same. This improves our runtime to XXX.
+Multiplication stays exactly the same. This improves our runtime to 906ms,
+already a 25% improvement.
 
 Calculating each entry requires summing $n$ doubles. Currently we accumulate the
 sum in the product matrix. If we just accumulate the sum in a local variable and
 set the product matrix at the end of the loop, we shave off over a billion array
-accesses. This cuts our time further, down to XXX.
+accesses. This cuts our time further, down to 865ms.
 
 Finally, our memory access to `a` in the inner loop is nice and sequential
 because rows are stored sequentially in `FlatArray`. However, `b` is not so
@@ -146,7 +150,7 @@ def transpose(a: FlatArray): FlatArray =
   for i <- 0 until a.cols do
     for j <- 0 until a.rows do
       t.set(i, j, a(j, i))
-t
+  return t
 ```
 
 This along with the previous improvements, means that multiplication now looks
@@ -161,20 +165,20 @@ for i <- 0 until a.rows do
     prod.set(i, j, sum)
 ```
 
-This brings the runtime down still further, to XXX, an improvement of XXX% over
+This brings the runtime down still further, to 831ms, an improvement of 31% over
 our initial, naive implementation. Further progress calls for more drastic
 action.
 
 
 ## Tiling
 
-So far we've mostly optimized for RAM, but that's just one level of the CPU's
-memory hierarchy. Each core also has an L1 cache, and accessing it can be one
-hundred times faster than memory access. The CPU will try to keep recently used
-data there, but if we keep asking for different data, that won't help.
+So far we've mostly optimized for RAM access, but that's just one level of the
+CPU's memory hierarchy. Each core also has an L1 cache, and accessing it can be
+over a hundred times faster than memory access. The CPU will try to keep recently
+used data there, but if we keep asking for different data, that won't help.
 
-Here we calculate $c_{1,1}$ using the first row of `a` and the first column
-of `b`. Then we move on the $c_{1,2}$ and ask for the second column of `b`,
+The above code calculates $c_{1,1}$ using the first row of `a` and the first column
+of `b`. Then it moves on the $c_{1,2}$ and asks for the second column of `b`,
 and so on. This means our data doesn't get to stick around in the cache for very
 long. By the time we get to $c_{2, 1}$ and want the first column of `b`
 again, it's long gone from the cache.
@@ -208,7 +212,7 @@ The products on the right side of the equation are regular matrix
 multiplication. This allows us to write matrix multiplication in two steps:
 first multiply the individual blocks, then multiply the matrices of blocks. For
 purposes of calculating entries of $c$, this amounts to breaking our sum into an
-inner an outer sum:
+inner and an outer sum:
 
 $$
 c_{i,j} = \sum_{x = 1}^m\sum_{k = 1}^d a_{i, xd + k}b_{xd + k, j}.
@@ -234,10 +238,11 @@ for i <- 0 until prod.rows by blockSize do
           prod.set(x, y, prod(x, y) + sum)
 ```
 
-The remaining question is: how big should `blockSize` be? You could try to
-calculate the largest possible block that would allow the calculation to fit in
-the L1 cache, but CPUs are hard to reason about. Better just to experiment.
-Trying a range of block sizes, we get the following times:
+It's not pretty, but it might be fast. The remaining question is: how big
+should `blockSize` be? You could try to calculate the largest possible block
+that would allow the calculation to fit in the L1 cache, but CPUs are hard to
+reason about abstractly, and optimization is an experimental science. Better
+just to try out some different sizes:
 
 XXX
 

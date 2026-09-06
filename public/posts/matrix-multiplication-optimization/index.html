@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
   <title>
   Matrix Multiplication Optimization · Luke Wassink
 </title>
@@ -44,7 +44,7 @@ of the computation in parallel.">
 	<meta name="twitter:description" content="Optimizing Matrix Multiplication Link to heading Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits significantly from some classic optimizations like:
 reducing array access sequential memory access cache locality parallelization There are also fancy algorithms that reduce the asymptotic complexity, but they are so complex they usually only show benefits for very large matrices, if at all. In any case, our plan will be to use the traditional algorithm for matrix multiplication and explore the benefits we can get from other changes like: how we store the matrices, what order we do the computations in, and running parts of the computation in parallel.">
 
-<meta property="og:url" content="https://lukewassink.com/posts/matrix-multiplication-optimization/">
+<meta property="og:url" content="http://localhost:1313/posts/matrix-multiplication-optimization/">
 	<meta property="og:site_name" content="Luke Wassink">
 	<meta property="og:title" content="Matrix Multiplication Optimization">
 	<meta property="og:description" content="Optimizing Matrix Multiplication Link to heading Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits significantly from some classic optimizations like:
@@ -61,7 +61,7 @@ reducing array access sequential memory access cache locality parallelization Th
 
 
 
-<link rel="canonical" href="https://lukewassink.com/posts/matrix-multiplication-optimization/">
+<link rel="canonical" href="http://localhost:1313/posts/matrix-multiplication-optimization/">
 
 
 <link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
@@ -71,7 +71,7 @@ reducing array access sequential memory access cache locality parallelization Th
 
   
   
-  <link rel="stylesheet" href="/css/coder.min.5e94c1acf7aa2066035cf2764ae3e4fe39db101d68b870f919966100d51fb861.css" integrity="sha256-XpTBrPeqIGYDXPJ2SuPk/jnbEB1ouHD5GZZhANUfuGE=" crossorigin="anonymous" media="screen" />
+  <link rel="stylesheet" href="/css/coder.css" media="screen">
 
 
 
@@ -81,7 +81,7 @@ reducing array access sequential memory access cache locality parallelization Th
   
     
     
-    <link rel="stylesheet" href="/css/coder-dark.min.ad48f476275974885bdc03d5251e3cdbe1678c54a63ff772376b0ed2adc468dd.css" integrity="sha256-rUj0didZdIhb3APVJR482&#43;FnjFSmP/dyN2sO0q3EaN0=" crossorigin="anonymous" media="screen" />
+    <link rel="stylesheet" href="/css/coder-dark.css" media="screen">
   
 
 
@@ -92,7 +92,8 @@ reducing array access sequential memory access cache locality parallelization Th
   
   
     
-    <link rel="stylesheet" href="/scss/custom.min.4823bb2c50951f2375631a0ba554939af59df6964e61ce5c9dc2c3180f927456.css" integrity="sha256-SCO7LFCVHyN1YxoLpVSTmvWd9pZOYc5cncLDGA&#43;SdFY=" crossorigin="anonymous" media="screen" />
+    
+    <link rel="stylesheet" href="/scss/custom.css" media="screen">
   
 
 
@@ -136,7 +137,7 @@ reducing array access sequential memory access cache locality parallelization Th
     <nav class="navigation">
   <section class="container">
     
-    <a class="navigation-title" href="https://lukewassink.com/">
+    <a class="navigation-title" href="http://localhost:1313/">
       Luke Wassink
     </a>
     
@@ -171,7 +172,7 @@ reducing array access sequential memory access cache locality parallelization Th
       <header>
         <div class="post-title">
           <h1 class="title">
-            <a class="title-link" href="https://lukewassink.com/posts/matrix-multiplication-optimization/">
+            <a class="title-link" href="http://localhost:1313/posts/matrix-multiplication-optimization/">
               Matrix Multiplication Optimization
             </a>
           </h1>
@@ -432,7 +433,8 @@ should <code>blockSize</code> be? You could try to calculate the largest possibl
 that would allow the calculation to fit in the L1 cache, but CPUs are hard to
 reason about abstractly, and optimization is an experimental science. Better
 just to try out some different sizes:</p>
-<div class="mermaid">
+<pre style="white-space: pre;">
+  <div class="mermaid">
 ---
 config:
   themeVariables:
@@ -445,7 +447,8 @@ xychart
     y-axis "Benchmark in ms" 0 --> 1200
     line [1056, 1052, 1008, 1035, 1073]
 
-</div>
+  </div>
+</pre>
 
 <p>And&hellip; it&rsquo;s worse :( After looking through some flame graphs, it turns out there
 are two issues:</p>
@@ -460,7 +463,8 @@ more we nest, the harder it is for the JIT compiler to optimize (see
 <a href="https://stackoverflow.com/questions/23693221/scala-iteratorforeach-performance-issue"  class="external-link" target="_blank" rel="noopener">here</a>).</p>
 <p>To solve this, we can switch to while loops. The code is gets pretty ugly-check
 out the repo if you want to see it. However, it does fix the problem:</p>
-<div class="mermaid">
+<pre style="white-space: pre;">
+  <div class="mermaid">
 ---
 config:
   themeVariables:
@@ -473,7 +477,8 @@ xychart
     y-axis "Benchmark in ms" 0 --> 1200
     line [770, 499, 600, 696, 827]
 
-</div>
+  </div>
+</pre>
 
 <p>So the best time is 499 ms at a block size of 64, for a 58% reduction in runtime
 compared to the naive approach. This is as far as we&rsquo;ll go with a single thread.
@@ -538,7 +543,8 @@ benchmark a range of values. At first I had a bug that caused the computation to
 complete correctly (thus cleverly evading the unit tests) but
 distributed the rows unevenly among the threads, causing worse performance with
 a higher thread count. With the bug fixed, we get:</p>
-<div class="mermaid">
+<pre style="white-space: pre;">
+  <div class="mermaid">
 ---
 config:
   themeVariables:
@@ -554,7 +560,8 @@ xychart
     line "3 threads" [219, 219, 218, 223, 240]
     line "4 threads" [207, 174, 184, 174, 179]
 
-</div>
+  </div>
+</pre>
 
 <p>As expected, performance increases roughly proportionally to thread count. Very
 small and very large blocks perform somewhat worse, but performance is fairly
@@ -680,18 +687,12 @@ way:</p>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.min.js"
     integrity="sha256-WB7X10vZBI0OOpE2OSfXLvIpQtdyJUayf3zCnjU5Drg="
     crossorigin="anonymous"></script>
-  <script>
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: 'default',
-      securityLevel: 'loose',
-    });
-  </script>
+  <script> mermaid.initialize({ startOnLoad: true, }); </script>
   
 
   
   
-  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  <script src="/js/coder.js"></script>
   
 
   

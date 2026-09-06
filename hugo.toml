@@ -20,7 +20,7 @@ pagerSize = 20
 
 [params]
   author = "Luke Wassink"
-  info = "Back end engineer"
+  info = "Backend engineer"
   description = "Luke Wassink's personal website"
   keywords = "blog,developer,personal,engineer"
   avatarurl = "/images/avatar.jpg"

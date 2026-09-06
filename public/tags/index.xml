@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 	<channel>
 		<title>Tags on Luke Wassink</title>
-		<link>http://localhost:1313/tags/</link>
+		<link>https://lukewassink.com/tags/</link>
 		<description>Recent content in Tags on Luke Wassink</description>
 		<generator>Hugo</generator>
 		<language>en-us</language>
@@ -12,26 +12,26 @@
 		
 			<lastBuildDate>Thu, 03 Sep 2026 16:58:27 -0500</lastBuildDate>
 		
-			<atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" />
+			<atom:link href="https://lukewassink.com/tags/index.xml" rel="self" type="application/rss+xml" />
 			<item>
 				<title>Algorithms</title>
-				<link>http://localhost:1313/tags/algorithms/</link>
+				<link>https://lukewassink.com/tags/algorithms/</link>
 				<pubDate>Thu, 03 Sep 2026 16:58:27 -0500</pubDate>
-				<guid>http://localhost:1313/tags/algorithms/</guid>
+				<guid>https://lukewassink.com/tags/algorithms/</guid>
 				<description></description>
 			</item>
 			<item>
 				<title>Optimization</title>
-				<link>http://localhost:1313/tags/optimization/</link>
+				<link>https://lukewassink.com/tags/optimization/</link>
 				<pubDate>Thu, 03 Sep 2026 16:58:27 -0500</pubDate>
-				<guid>http://localhost:1313/tags/optimization/</guid>
+				<guid>https://lukewassink.com/tags/optimization/</guid>
 				<description></description>
 			</item>
 			<item>
 				<title>Scala</title>
-				<link>http://localhost:1313/tags/scala/</link>
+				<link>https://lukewassink.com/tags/scala/</link>
 				<pubDate>Thu, 03 Sep 2026 16:58:27 -0500</pubDate>
-				<guid>http://localhost:1313/tags/scala/</guid>
+				<guid>https://lukewassink.com/tags/scala/</guid>
 				<description></description>
 			</item>
 	</channel>

@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 	<channel>
 		<title>Posts on Luke Wassink</title>
-		<link>https://lukewassink.com/posts/</link>
+		<link>http://localhost:1313/posts/</link>
 		<description>Recent content in Posts on Luke Wassink</description>
 		<generator>Hugo</generator>
 		<language>en-us</language>
@@ -12,12 +12,12 @@
 		
 			<lastBuildDate>Thu, 03 Sep 2026 16:58:27 -0500</lastBuildDate>
 		
-			<atom:link href="https://lukewassink.com/posts/index.xml" rel="self" type="application/rss+xml" />
+			<atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
 			<item>
 				<title>Matrix Multiplication Optimization</title>
-				<link>https://lukewassink.com/posts/matrix-multiplication-optimization/</link>
+				<link>http://localhost:1313/posts/matrix-multiplication-optimization/</link>
 				<pubDate>Thu, 03 Sep 2026 16:58:27 -0500</pubDate>
-				<guid>https://lukewassink.com/posts/matrix-multiplication-optimization/</guid>
+				<guid>http://localhost:1313/posts/matrix-multiplication-optimization/</guid>
 				<description>&lt;h1 id=&#34;optimizing-matrix-multiplication&#34;&gt;&#xA;  Optimizing Matrix Multiplication&#xA;  &lt;a class=&#34;heading-link&#34; href=&#34;#optimizing-matrix-multiplication&#34;&gt;&#xA;    &lt;i class=&#34;fa-solid fa-link&#34; aria-hidden=&#34;true&#34; title=&#34;Link to heading&#34;&gt;&lt;/i&gt;&#xA;    &lt;span class=&#34;sr-only&#34;&gt;Link to heading&lt;/span&gt;&#xA;  &lt;/a&gt;&#xA;&lt;/h1&gt;&#xA;&lt;p&gt;Matrix multiplication is a great test case to understand performance&#xA;optimization.  The underlying algorithm is fairly simple, and it benefits&#xA;significantly from some classic optimizations like:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;reducing array access&lt;/li&gt;&#xA;&lt;li&gt;sequential memory access&lt;/li&gt;&#xA;&lt;li&gt;cache locality&lt;/li&gt;&#xA;&lt;li&gt;parallelization&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;There are also fancy algorithms that reduce the asymptotic complexity, but they&#xA;are so complex they usually only show benefits for very large matrices, if at&#xA;all. In any case, our plan will be to use the traditional algorithm for matrix&#xA;multiplication and explore the benefits we can get from other changes like: how&#xA;we store the matrices, what order we do the computations in, and running parts&#xA;of the computation in parallel.&lt;/p&gt;</description>
 			</item>
 	</channel>

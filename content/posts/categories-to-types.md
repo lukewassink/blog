@@ -192,35 +192,105 @@ a$. This turns out to be one of those constraints we were talking about a couple
 paragraphs ago, so non-negative integers along with this choice of $\\mu$ and
 $\\eta$ turns out to be a monoid object in the category of sets.
 
-Let's take stock. We've defined monoids. We've defined endofunctors. Now it's
-time for, you guessed it, **monoids in the category of endofunctors!** You see,
-mathematicians are perverse and masochistic. They had things like numbers, and
-ways to get from one thing to another. Then they built sets of those things, and
-gave some of those sets structure to make groups and rings and vector spaces.
-Each of those has their own preferred kind of map that let you get from one
-structure to another. Then mathematicians took all the sets, all the groups, all
-the rings, and gathered each of them together to make the category of sets, and
-the category of groups, and the category of rings. And they defined maps between
-categories, and called them functors. 
+Let's take stock. We've defined monoids. We've defined endofunctors. Now we're
+almost ready for, you guessed it, **monoids in the category of endofunctors!**
+You see, mathematicians are perverse and masochistic. They had things like
+numbers, and ways to get from one thing to another. Then they built sets of
+those things, and gave some of those sets structure to make groups and rings and
+vector spaces.  Each of those has their own preferred kind of map that let you
+get from one structure to another. Then mathematicians took all the sets, all
+the groups, all the rings, and gathered each of them together to make the
+category of sets, and the category of groups, and the category of rings. And
+they defined maps between categories, and called them functors. 
 
 Well, why stop there? We can now consider all the functors from some category to
 itself-all the endofunctors-and *those* form a category. What are the morphisms
 in this insane category? They're things called [natural transformations](XXX).
 To do this job, a natural transformation must map one functor to another. How
 can we do that. Let's consider two endofunctors $F$ and $G$. Take a particular
-object $Z$, to make things more concrete, and set $Y = F(X)$ and $Z = G(X)$. We
-can picture the situation as:
+object $X$. A natural transformation $\varphi$ from $F$ to $G$ should give us a morphism
+$\varphi_X: F(X)\to G(X)$[^2].
+
+It also turns out that the category of endofunctors is always a monoidal
+category. The product of two endofunctors is just given by composition:
+
+$$F\\times G = F\\circ G$$
+
+Composition is associative, and the identity object is just the identity functor
+we discussed earlier.
+
+Let's put the pieces together. A *monad* is a *monoid* in the category of
+ *endofunctors*. Let $F$ be a monad. A monoid object needs two special morphisms.
+ First, $\\mu: F\times F\to F$. Second, $\\eta: I\to F$. For endofunctors the product is just composition,
+morphisms are natural transformations, and the identity object is the identity
+functor, which we'll call $Id$. A natural transformation gives us a morphism for
+each object. So for each object $X$ we need morphisms:
 
 $$
-\\begin{tikzcd}
-	& X & \\\\
-	\\\\
-	Y && Z
-	\\arrow["F", from=1-2, to=3-1]
-	\\arrow["G"', from=1-2, to=3-3]
-\\end{tikzcd}
+\\begin{align*}
+\\mu_X:& F(F(X)) \to F(X) \\\\
+\\eta_X:& X \to F(X)
+\\end{align*},
 $$
 
+where the second line follows from $Id(X) = X$. As usual, we will brush under
+the rug some conditions that allow us to think of $\\mu$ analogously to
+associative multiplication and $\\eta$ analogously to the identity for this
+multiplication. After a brief detour, our next step will be to connect all this
+to programming.
 
-[^1]: actually, not all categories have objects that can be viewed as sets, but
+
+## A Brief Detour
+
+You may have a lingering question: what of the humble, concrete monoid we
+mentioned in the first section? Was that really just a red herring, thrown in
+our path by Google to keep us from discovering the real monoid we wanted: the
+delightful monoid object?
+
+**Warning:** in the previous section I tried to give a somewhat accessible
+explanation of everything, even if it was often a fuzzy explanation that
+elided lots of important details. I'm not saying I succeeded, but at least
+I tried. For the remainder of this section I won't even do that. If you don't
+have some prior exposure to abstract algebra and particularly category theory,
+you'll probably find this part pretty inaccessible. If you want to skip to the
+next section where there are nice friendly blocks of code, you have my blessing!
+
+The answer to the question from two paragraphs ago is, of course, no. The two
+concepts of monoid are *not* unrelated. In fact, there are at least two
+connections.
+
+First, recall that a *small* category is a category whose objects form a set,
+and not a proper class. The set of equivalence classes of objects under
+isomorphism of a small monoidal category *is* a monoid. The identity
+element is the identity object, and multiplication is given by the product. The
+coherence conditions on the monoidal product guarantee that multiplication is
+associative and that the identity behaves correctly.
+
+Conversely, any monoid is a small monoidal category with product given by
+multiplication in the monoid, and identity object given by the identity.
+
+Second, any monoid is a monoid object in the category of sets. The
+multiplication morphism $\\mu$ is given by multiplication in the monoid:
+$\\mu(a\times b) = a*b$. Pick any singleton set $\\{x\\}$. Then $\\eta$ is
+given by $\\eta(x) = e$ where $e$ is the identity in the monoid.
+Associativity and identity properties of the monoid guarantee that the coherence
+conditions on $\\mu$ and $\\eta$ are satisfied.
+
+Conversely, suppose $(M,\\mu,\\eta)$ is a monoid object in the category of sets.
+Then $M$ is a monoid if we define multiplication and identity by $a*b =
+\\mu(a,b)$ and $e = \\eta(x)$. Now, on to programing!
+
+
+## Types, at last
+
+At last, we come to types. In this section, I'll lay out the connection between
+types and category theory, and in the next I'll zoom in on monads and show how
+the usual definition of monads in terms of `return` and `flatMap` matches the
+category theoretic definition we've unpacked. Of course, there will be plenty of
+examples along the way.
+
+
+[^1]: Actually, not all categories have objects that can be viewed as sets, but
   we needn't worry about that here.
+[^2]: We also need $\varphi$ to play nicely with the way $F$ and $G$ map
+  morphisms.

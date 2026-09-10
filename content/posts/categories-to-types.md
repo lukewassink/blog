@@ -723,10 +723,10 @@ If you made it this far, thanks! I hope it was helpful!
 If you've read this far, hopefully you have a deeper understanding of
 categories, how they can model types, and particularly of monads, and how they
 can safely model computation. If you want to go use monads without worrying any
-further about the math, go for it! Just in case you want to further solidify your
-understanding of the theory of monad, here's an outline of some material you can
-try to work through for yourself. It should fill in most of the gaps we passed
-over in the post. Here are the steps:
+further about the math, go for it! Just in case you want to further solidify
+your understanding of the theory behind monads, here's an outline of some
+material you can try to work through for yourself. It should fill in most of the
+gaps we passed over in the post. The steps are:
 
 1. Look up the definitions for
    [catgory](https://en.wikipedia.org/wiki/Category_theory),

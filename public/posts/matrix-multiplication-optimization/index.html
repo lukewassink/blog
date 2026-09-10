@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<head>
   <title>
   Matrix Multiplication Optimization · Luke Wassink
 </title>
@@ -44,7 +44,7 @@ of the computation in parallel.">
 	<meta name="twitter:description" content="Optimizing Matrix Multiplication Link to heading Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits significantly from some classic optimizations like:
 reducing array access sequential memory access cache locality parallelization There are also fancy algorithms that reduce the asymptotic complexity, but they are so complex they usually only show benefits for very large matrices, if at all. In any case, our plan will be to use the traditional algorithm for matrix multiplication and explore the benefits we can get from other changes like: how we store the matrices, what order we do the computations in, and running parts of the computation in parallel.">
 
-<meta property="og:url" content="http://localhost:1313/posts/matrix-multiplication-optimization/">
+<meta property="og:url" content="https://lukewassink.com/posts/matrix-multiplication-optimization/">
 	<meta property="og:site_name" content="Luke Wassink">
 	<meta property="og:title" content="Matrix Multiplication Optimization">
 	<meta property="og:description" content="Optimizing Matrix Multiplication Link to heading Matrix multiplication is a great test case to understand performance optimization. The underlying algorithm is fairly simple, and it benefits significantly from some classic optimizations like:
@@ -61,7 +61,7 @@ reducing array access sequential memory access cache locality parallelization Th
 
 
 
-<link rel="canonical" href="http://localhost:1313/posts/matrix-multiplication-optimization/">
+<link rel="canonical" href="https://lukewassink.com/posts/matrix-multiplication-optimization/">
 
 
 <link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
@@ -71,7 +71,7 @@ reducing array access sequential memory access cache locality parallelization Th
 
   
   
-  <link rel="stylesheet" href="/css/coder.css" media="screen">
+  <link rel="stylesheet" href="/css/coder.min.5e94c1acf7aa2066035cf2764ae3e4fe39db101d68b870f919966100d51fb861.css" integrity="sha256-XpTBrPeqIGYDXPJ2SuPk/jnbEB1ouHD5GZZhANUfuGE=" crossorigin="anonymous" media="screen" />
 
 
 
@@ -81,7 +81,7 @@ reducing array access sequential memory access cache locality parallelization Th
   
     
     
-    <link rel="stylesheet" href="/css/coder-dark.css" media="screen">
+    <link rel="stylesheet" href="/css/coder-dark.min.ad48f476275974885bdc03d5251e3cdbe1678c54a63ff772376b0ed2adc468dd.css" integrity="sha256-rUj0didZdIhb3APVJR482&#43;FnjFSmP/dyN2sO0q3EaN0=" crossorigin="anonymous" media="screen" />
   
 
 
@@ -92,8 +92,7 @@ reducing array access sequential memory access cache locality parallelization Th
   
   
     
-    
-    <link rel="stylesheet" href="/scss/custom.css" media="screen">
+    <link rel="stylesheet" href="/scss/custom.min.4823bb2c50951f2375631a0ba554939af59df6964e61ce5c9dc2c3180f927456.css" integrity="sha256-SCO7LFCVHyN1YxoLpVSTmvWd9pZOYc5cncLDGA&#43;SdFY=" crossorigin="anonymous" media="screen" />
   
 
 
@@ -137,7 +136,7 @@ reducing array access sequential memory access cache locality parallelization Th
     <nav class="navigation">
   <section class="container">
     
-    <a class="navigation-title" href="http://localhost:1313/">
+    <a class="navigation-title" href="https://lukewassink.com/">
       Luke Wassink
     </a>
     
@@ -172,7 +171,7 @@ reducing array access sequential memory access cache locality parallelization Th
       <header>
         <div class="post-title">
           <h1 class="title">
-            <a class="title-link" href="http://localhost:1313/posts/matrix-multiplication-optimization/">
+            <a class="title-link" href="https://lukewassink.com/posts/matrix-multiplication-optimization/">
               Matrix Multiplication Optimization
             </a>
           </h1>
@@ -255,26 +254,24 @@ and uses lots of <code>var</code>s ;)</p>
   </a>
 </h2>
 <p>Suppose we have two matrices:</p>
-<p>$$
+$$
 a = \left(
 \begin{matrix}
-a_{1,1} &amp; \dots &amp; a_{1, l} \\
-\vdots &amp; &amp; \vdots \\
-a_{n, 1} &amp; \dots &amp;  a_{n, l}
+a_{1,1} & \dots & a_{1, l} \\\\
+\vdots & & \vdots \\\\
+a_{n, 1} & \dots &  a_{n, l}
 \end{matrix}
 \right)
 b = \left(
 \begin{matrix}
-b_{1,1} &amp; \dots &amp; b_{1, m} \\
-\vdots &amp; &amp; \vdots \\
-b_{l, 1} &amp; \dots &amp;  b_{l, m}
+b_{1,1} & \dots & b_{1, m} \\\\
+\vdots & & \vdots \\\\
+b_{l, 1} & \dots &  b_{l, m}
 \end{matrix}
 \right)
-$$</p>
-<p>Define $c = ab$ to be the product matrix. Then $c$ has $n$ rows and $m$ columns,
+$$<p>Define $c = ab$ to be the product matrix. Then $c$ has $n$ rows and $m$ columns,
 and its entries are defined by the formula</p>
-<p>$$c_{i,j} = a_{i, 1} b_{1,j} + a_{i,2} b_{2,j} + \dots + a_{i,l} b_{l,j}.$$</p>
-<p>To simplify the math so we can focus on optimization, this writeup will focus on
+$$c_{i,j} = a_{i, 1} b_{1,j} + a_{i,2} b_{2,j} + \dots + a_{i,l} b_{l,j}.$$<p>To simplify the math so we can focus on optimization, this writeup will focus on
 square, $n\times n$ matrices.  The code I wrote should handle matrices of any
 shape, so check it out if you want details. The product of two $n\times n$
 matrices has $n^2$ entries, each of which requires $\mathcal{O}(n)$ operations to calculate
@@ -292,7 +289,7 @@ not implement them.</p>
 </h2>
 <p>We&rsquo;ll benchmark all our algorithms against the same task: multiplying two random
 1024 x 1024 matrices. All our matrix entries will be random Doubles. Scala&rsquo;s
-<code>Random(seed).nextDouble</code> returns a value in ([0, 1)).  That&rsquo;s what we&rsquo;ll use.</p>
+<code>Random(seed).nextDouble</code> returns a value in \([0, 1)\).  That&rsquo;s what we&rsquo;ll use.</p>
 <p>All the tests were run on my MacBook Air with:</p>
 <ul>
 <li>16 GB memory</li>
@@ -390,30 +387,27 @@ from <code>a</code> and <code>b</code> all at once, so we can keep them cached. 
 divides evenly into $n$. Relaxing this is possible and doesn&rsquo;t change the
 fundamental logic, but it does make things fiddlier. We can break our matrices
 into $d\times d$ blocks:</p>
-<p>$$
-a =
+$$
+a = 
 \left(
 \begin{matrix}
-A_{1,1} &amp; A_{1,2} &amp; \dots &amp; A_{1,m} \\
-A_{2,1} &amp; A_{2,2} &amp; \dots &amp; A_{2,m} \\
-\vdots &amp; &amp; &amp; \vdots \\
-A_{m,1} &amp; A_{m,2} &amp; \dots &amp; A_{m,m}
+  A_{1,1} & A_{1,2} & \dots & A_{1,m} \\\\
+  A_{2,1} & A_{2,2} & \dots & A_{2,m} \\\\
+  \vdots & & & \vdots \\\\
+  A_{m,1} & A_{m,2} & \dots & A_{m,m}
 \end{matrix}
 \right),
-$$</p>
-<p>where $m = n / d$. Then we can calculate the blocks of the product by:</p>
-<p>$$
+$$<p>where $m = n / d$. Then we can calculate the blocks of the product by:</p>
+$$
 C_{x,y} = A_{x,1}B_{1,y} + A_{x,2}B_{2,y} + \dots + A_{x,d}B_{d,y}.
-$$</p>
-<p>The products on the right side of the equation are regular matrix
+$$<p>The products on the right side of the equation are regular matrix
 multiplication. This allows us to write matrix multiplication in two steps:
 first multiply the individual blocks, then multiply the matrices of blocks. For
 purposes of calculating entries of $c$, this amounts to breaking our sum into an
 inner and an outer sum:</p>
-<p>$$
+$$
 c_{i,j} = \sum_{x = 1}^m\sum_{k = 1}^d a_{i, xd + k}b_{xd + k, j}.
-$$</p>
-<p>We are computing the same sum-just in a different order. If we further compute
+$$<p>We are computing the same sum-just in a different order. If we further compute
 entries block-by-block rather than row-by-row, we will end up re-using the
 entries of a given block in our calculation til we are done with them before
 moving on to another block. For small enough blocks, this should improve our
@@ -692,7 +686,7 @@ way:</p>
 
   
   
-  <script src="/js/coder.js"></script>
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
   
 
   

@@ -121,7 +121,7 @@ better.
 Let's begin with some low hanging fruit. We are storing our matrices as nested
 arrays. This adds pointer indirection and forces the CPU to chase references on
 the heap. Instead, let's unwind the matrix in a single, flat array with $n^2$
-entries. We can access and set the entres like so:
+entries. We can access and set the entries like so:
 
 ```scala
 class FlatArray(val data: Array[Double], val rows: Int, val cols: Int):
@@ -344,7 +344,7 @@ core's cache will be invalidated. This is called *false sharing*. Fortunately,
 in our case each thread is responsible for a contiguous region of hundreds of
 thousands of bytes. False sharing could only happing if thread 1 reached the end
 of it's data while thread 2 was at the very beginning of the following chunk of
-data. This should never happen (and it can only possible happen $t-1$ times for
+data. This should never happen (and it can only possibly happen $t-1$ times for
 $t$ threads) so we're in the clear.
 
 In any case, all that remains is to run each thread asynchronously in a Scala

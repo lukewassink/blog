@@ -37,7 +37,7 @@ So it might be a post written only for its author. But maybe not. Read on if:
     category theory
 - you want to know what category theory has to do with types, and exactly which
     types are functors
-- you want a discussion of monads that does it's very best to clearly explain
+- you want a discussion of monads that does its very best to clearly explain
     exactly what a monoid in the category of endofunctors is, and why it might
     be nice thing for your programs.
 
@@ -62,7 +62,7 @@ n$ matrices under multiplication (the identity matrix is the identity).
 Now the million dollar question: what does this have to do with types?
 Absolutely nothing! Or at least, not directly. To see the connection we'll have
 to go through category theory, and meet another definition of monoid. (Or is it
-secretly the same definition?.  Let's find out.)
+secretly the same definition? Let's find out.)
 
 
 ## Abstract nonsense
@@ -100,7 +100,7 @@ The example to keep in mind is the category of sets. Objects are sets, morphisms
 are functions, and composition of morphisms is just ordinary composition of
 functions.
 
-It's important to note that morphisms are first class citizens in this
+It is important to note that morphisms are first class citizens in this
 definition, and while there might be a natural choice for some set of objects,
 nothing forces us to make that choice. Keep the objects but change the
 morphisms, and you get a different category.
@@ -191,12 +191,12 @@ $$
 $$
 
 Perhaps you see why we need to define $M$ inside a monoidal category? It's so
-$M\otimes M$ exists.  Of course, $\mu$ and $\eta$ have to satisfy some
+$M\otimes M$ exists. Of course, $\mu$ and $\eta$ have to satisfy some
 constraints additional constraints that, confusingly, are also called
 *coherence conditions*. We'll spell them out a bit more in the context of
 types. For now, follow the links if you want more details.
 
-Now what does a monoid object look like in our trusty category of sets The
+Now what does a monoid object look like in our trusty category of sets. The
 multiplication morphism, as $\mu$ is often referred to, is going to be a map
 from $M\times M$ to $M$, so it takes in a pair of elements of $M$ and returns a
 single element of $M$. Let's use our example of non-negative integers from the
@@ -213,7 +213,7 @@ almost ready for, you guessed it, **monoids in the category of endofunctors!**
 You see, mathematicians are perverse and masochistic. They had things like
 numbers, and ways to get from one thing to another. Then they built sets out of
 those things, and gave some of those sets structure to make groups and rings and
-vector spaces.  Each of those has their own preferred kind of map that let you
+vector spaces. Each of those has their own preferred kind of map that let you
 get from one structure to another. Then mathematicians took all the sets, all
 the groups, all the rings, and gathered each of them together to make the
 category of sets, and the category of groups, and the category of rings. And
@@ -222,7 +222,7 @@ they defined maps between categories, and called them functors.
 Well, why stop there? We can now consider all the functors from a category to
 itself—all the endofunctors—and *those* form a category. What are the morphisms
 in this insane category? They're things called [natural
-transformations](https://en.wikipedia.org/wiki/Natural_transformation).  This
+transformations](https://en.wikipedia.org/wiki/Natural_transformation). This
 means that a natural transformation must somehow map one functor to another. How
 can it do that. Let's pick two endofunctors $F$ and $G$. Take any
 object $X$. A natural transformation $\varphi$ from $F$ to $G$ needs to give us a
@@ -232,10 +232,13 @@ has on objects to the effect $G$ has on objects.
 It also turns out that the category of endofunctors is always a monoidal
 category. The product of two endofunctors is just given by composition:
 
-$$F\times G = F\circ G$$
+$$F\otimes G = F\circ G$$
 
 Composition is associative, and the identity object is just the identity functor
-we discussed earlier[^monoid-product-morphisms].
+we discussed earlier[^monoid-product-morphisms]. As a functor, $\otimes$ also
+acts on morphisms, so one must define $\varphi\otimes\psi$ for two natural
+transformations $\varphi$ and $\psi$. Check the last section if you want more
+details. For now, we finally have everything we need for monads!
 
 Let's put the pieces together. A *monad* is a *monoid* in the category of
 *endofunctors*. Let $F$ be a monad. A monoid object needs two special morphisms.
@@ -352,7 +355,7 @@ are not the same types.
 
 One final note: we often ignore the limitations of the computer when they won't
 matter for our analysis. For example, we often act as though `Int` is the
-actual, infinite set of integers. But of course it isn't, and it's operations
+actual, infinite set of integers. But of course it isn't, and its operations
 aren't even designed the same way. They have builtin logic to handle overflow.
 Integers in math can't overflow. You could model `Int` precisely, but when
 you're asking things like, is this type a product of these other two types? or,
@@ -400,10 +403,10 @@ types. Since it maps objects from a category back to the same category, `F` is
 an *endofunctor*.
 
 
-### An interesting detour
+### Limitations of the sets model
 
 This section isn't necessary for anything that follows. But it does highlight
-and interesting point at which the connection between actual Scala types and
+an interesting point at which the connection between actual Scala types and
 objects in a category breaks down. Feel free to skip it if you just want to get
 to monads.
 
@@ -437,7 +440,7 @@ allowed to be any old type. It must be of the form `List[T]` for some type `T`;
 2) the type checker knows that`F[A]` is equal to the type `Vector[T]`.
 Unfortunately, as far as I know, implementing `F` in Scala isn't possible. Or if
 it is, it's quite complicated, and something in the neighborhood is certainly
-impossible. After all, think of what we're asking of the type checker.  We're
+impossible. After all, think of what we're asking of the type checker. We're
 asking it to:
 
 1. Restrict `A` to only types of the form `List[T]`
@@ -651,9 +654,9 @@ class DeferredSource(source: () => T):
 Note that `source` can be anything. It could read from a database. It could make
 a network call. And those actions could have side effects. Maybe it advances an
 iterator, or pops an element off of a queue. Whatever `source` does, `Source`
-should hold onto it and defer it's execution until we call `run`.
+should hold onto it and defer its execution until we call `run`.
 
-To make `Sourc` a monad we also need to define `flatMap`.  Here's the first
+To make `Source` a monad we also need to define `flatMap`. Here's the first
 thought you might come up with:
 
 ```scala
@@ -662,13 +665,13 @@ def flatMap1[S](f: T => S): Source[S] = f(run)
 
 The type signatures all work out. It seems to satisfy the coherence conditions.
 But if you're a student of tropes, you can probably tell another shoe is going
-to drop. The problem is, it doesn't actually deffer computation. It runs the
+to drop. The problem is, it doesn't actually defer computation. It runs the
 computation, and then simply wraps it up in another `Source`. And because the
-computation can have side effects, we loose the benefits given to us by all the
+computation can have side effects, we lose the benefits given to us by all the
 category theory we did.
 
 This is because `flatMap1` violates what is known as *referential transparency*. An
-expression is referentially transparent if we can replace it with it's evaluated
+expression is referentially transparent if we can replace it with its evaluated
 value without affecting the program. Mathematical functions are just recipes for
 turning input into output. They don't *do* anything, so evaluating a
 mathematical function is always referentially transparent. When we did math

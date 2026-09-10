@@ -331,7 +331,7 @@ better.</p>
 <p>Let&rsquo;s begin with some low hanging fruit. We are storing our matrices as nested
 arrays. This adds pointer indirection and forces the CPU to chase references on
 the heap. Instead, let&rsquo;s unwind the matrix in a single, flat array with $n^2$
-entries. We can access and set the entres like so:</p>
+entries. We can access and set the entries like so:</p>
 <div class="highlight"><pre tabindex="0" style="color:#586e75;background-color:#fdf6e3;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-scala" data-lang="scala"><span style="display:flex;"><span><span style="color:#859900">class</span> <span style="color:#cb4b16">FlatArray</span>(<span style="color:#859900">val</span> <span style="color:#268bd2">data</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Array</span>[<span style="color:#859900;font-weight:bold">Double</span>], <span style="color:#859900">val</span> <span style="color:#268bd2">rows</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Int</span>, <span style="color:#859900">val</span> <span style="color:#268bd2">cols</span><span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Int</span>)<span style="color:#859900">:</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#859900;font-weight:bold">def</span> <span style="color:#859900;font-weight:bold">apply</span>(<span style="color:#859900;font-weight:bold">i:</span> <span style="color:#859900;font-weight:bold">Int</span>, <span style="color:#859900;font-weight:bold">j:</span> <span style="color:#859900;font-weight:bold">Int</span>)<span style="color:#859900">:</span> <span style="color:#859900;font-weight:bold">Double</span> = <span style="color:#268bd2">data</span>(<span style="color:#268bd2">i</span> * <span style="color:#268bd2">cols</span> + <span style="color:#268bd2">j</span>)
 </span></span><span style="display:flex;"><span>
@@ -525,7 +525,7 @@ core&rsquo;s cache will be invalidated. This is called <em>false sharing</em>. F
 in our case each thread is responsible for a contiguous region of hundreds of
 thousands of bytes. False sharing could only happing if thread 1 reached the end
 of it&rsquo;s data while thread 2 was at the very beginning of the following chunk of
-data. This should never happen (and it can only possible happen $t-1$ times for
+data. This should never happen (and it can only possibly happen $t-1$ times for
 $t$ threads) so we&rsquo;re in the clear.</p>
 <p>In any case, all that remains is to run each thread asynchronously in a Scala
 <code>Future</code> and wait for them to fill in the results:</p>

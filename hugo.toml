@@ -59,6 +59,14 @@ pagerSize = 20
   weight = 1
   url = "https://www.linkedin.com/in/lwassink/"
 
+[[params.social]]
+  name = "RSS"
+  icon = "fa-solid fa-rss fa-2x"
+  weight = 6
+  url = "https://lukewassink.com/index.xml"
+  rel = "alternate"
+  type = "application/rss+xml"
+
 [params.giscus] # https://giscus.app
   repo = "lukewassink/blog"
   repoID = "R_kgDOUNP29Q"

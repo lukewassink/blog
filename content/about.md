@@ -11,3 +11,6 @@ I occasionally write about things that interest me like:
 - Distributed systems
 - Functional programming
 - Computer performance
+
+Everything on this site is 100% human written, with no copy/pasting from an LLM.
+Any mistakes are my fault!

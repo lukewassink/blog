@@ -734,8 +734,9 @@ over in the post. Here are the steps:
    transformation](https://en.wikipedia.org/wiki/Natural_transformation),
    [monoidal category](https://en.wikipedia.org/wiki/Monoidal_category), and
    [monoid object](https://en.wikipedia.org/wiki/Monoid_(category_theory)) and
-   COPY THEM. This is very important. Reading a definition simply isn't the same
-   as writing it out yourself and being forced to actually read every character.
+   copy them out by hand. This is very important. Reading a definition simply
+   isn't the same as writing it out yourself and being forced to actually read
+   every character.
 
 1. Prove that the category of endofunctors with morphisms given by natural
    transformations, $\otimes$ given by composition of endofunctors, and $\rho$,
@@ -743,7 +744,7 @@ over in the post. Here are the steps:
    monoidal category. The tricky part is to work out how to define
    $\varphi\otimes\psi$ for two natural transformations. Try to figure out
    what it should be—you'll need it to check the coherence conditions. If you get
-   stuck click below for the answer.
+   stuck, click below for the answer.
 {{< details summary="reveal answer" >}}
 Suppose $F, G, H, K$ are endofunctors with $\varphi:F\to G$ and $\varphi:H\to K$.
 Let $X$ be an object. Then:

@@ -171,7 +171,7 @@ just the ordinary product: the set of all pairs of elements from the two sets.
 For example:
 
 $$
-\{1, 2\} \times \{a, b, c\} = \{(1, a), (1, b), (2, a), (1, b), (2, b), (1, c), (2, c)\}.
+\{1, 2\} \times \{a, b, c\} = \{(1, a), (1, b), (2, a), (1, b), (2, b), (1, c), (2, c)\}
 $$
 
 For the identity object, just pick any set with one element. You get an
@@ -191,10 +191,10 @@ $$
 $$
 
 Perhaps you see why we need to define $M$ inside a monoidal category? It's so
-$M\otimes M$ exists. Of course, $\mu$ and $\eta$ have to satisfy some
-constraints additional constraints that, confusingly, are also called
-*coherence conditions*. We'll spell them out a bit more in the context of
-types. For now, follow the links if you want more details.
+$M\otimes M$ exists. Of course, $\mu$ and $\eta$ have to satisfy some additional
+constraints that, confusingly, are also called *coherence conditions*. We'll
+spell them out a bit more in the context of types. For now, follow the links if
+you want more details.
 
 Now what does a monoid object look like in our trusty category of sets. The
 multiplication morphism, as $\mu$ is often referred to, is going to be a map

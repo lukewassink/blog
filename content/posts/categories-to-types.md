@@ -440,7 +440,7 @@ allowed to be any old type. It must be of the form `List[T]` for some type `T`;
 2) the type checker knows that`F[A]` is equal to the type `Vector[T]`.
 Unfortunately, as far as I know, implementing `F` in Scala isn't possible. Or if
 it is, it's quite complicated, and something in the neighborhood is certainly
-impossible. After all, think of what we're asking of the type checker. We're
+impossible[^non-endo-functor]. After all, think of what we're asking of the type checker. We're
 asking it to:
 
 1. Restrict `A` to only types of the form `List[T]`
@@ -802,11 +802,24 @@ Now you can check the coherence conditions.
   => f(g(x))) == a.map(f).map(g)`. Confirming that these conditions are
   satisfied for most common functors is straightforward.
 
-[^isomorphism]: An isomorphism in a category is a morphism $f: A\to B$ that has
+[^non-endo-functor]: Thanks to a [Reddit
+  user](https://www.reddit.com/r/scala/comments/1wcnivm/comment/p9gjn4e/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button),
+  it turns out this is possible. We can define `F[_]` and `map` as:
+
+      ```scala
+      type F[A] = A match
+          case List[t] => Vector[t]
+
+      extension [T](vec: F[List[T]])
+          def map[S](f: List[T] => List[S]): Vector[S] =
+              f(vec.toList).toVector
+      ```
+
+  [^isomorphism]: An isomorphism in a category is a morphism $f: A\to B$ that has
   an inverse morphism $f^{-1}:B\to A$ such that $f\circ f^{-1} = id_A$ and
   $f^{-1}\circ f = id_B$.
 
-[^pure-function-syntax]: Actually, because of an experimental language feature,
+  [^pure-function-syntax]: Actually, because of an experimental language feature,
   the type is `A -> IterableOnce[B]`. See
   [here](https://docs.scala-lang.org/scala3/reference/experimental/purefuns.html)
   for details.

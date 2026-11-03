@@ -108,7 +108,7 @@ Let's define multiplication the simplest way we can:
 for i <- 0 until a.rows do
   for j <- 0 until b.cols do
     for k <- 0 until a.cols do
-      prod.set(i, j, a(i, k) * b(k, j)) // This set's the (i, j) entry of prod
+      prod.set(i, j, prod(i, j) + a(i, k) * b(k, j)) // This sets the (i, j) entry of prod
 ```
 
 As noted above, this is $O(n^3)$ operations. In our case $n^3 = 1,073,741,824$.
@@ -160,7 +160,7 @@ like:
 ```scala
 for i <- 0 until a.rows do
   for j <- 0 until b.cols do
-    var sum = 0
+    var sum = 0.0
     for k <- 0 until a.cols do
         sum = sum + a(i, k) * bTranspose(j, k)
     prod.set(i, j, sum)
@@ -268,7 +268,7 @@ are two issues:
    they slow down dramatically.
 
 This turns out to be a known issue with Scala. One reason for the slowdown is that each nested `forEach`
-runs its code in an anonymous function, which caries its own overhead, and the
+runs its code in an anonymous function, which carries its own overhead, and the
 more we nest, the harder it is for the JIT compiler to optimize (see
 [here](https://stackoverflow.com/questions/23693221/scala-iteratorforeach-performance-issue)).
 
@@ -302,7 +302,7 @@ shared data structures. No need for locks or mutexes.
 
 The plan is to continue using blocks. We'll divide the rows of blocks among the
 threads. For example, if we have $64\times 64$ matrix with blocks of size 8, there are 8
-rows of blocks. If we use 4 threads, then each thread get's 2 rows of blocks.
+rows of blocks. If we use 4 threads, then each thread gets 2 rows of blocks.
 That means each thread is responsible for 16 blocks, for 16 rows, or for 1024
 entries, however you want to think about it. Remember we're using while loops
 now. The code to compute one row of blocks is:
@@ -342,9 +342,9 @@ chunk of data they can atomically access. If one core accesses a variable, and
 then another core accesses another variable in the same cache line, the first
 core's cache will be invalidated. This is called *false sharing*. Fortunately,
 in our case each thread is responsible for a contiguous region of hundreds of
-thousands of bytes. False sharing could only happing if thread 1 reached the end
-of it's data while thread 2 was at the very beginning of the following chunk of
-data. This should never happen (and it can only possibly happen $t-1$ times for
+thousands of bytes. False sharing can only happen if thread 1 reaches the end
+of its data while thread 2 is still at the very beginning of the following chunk.
+This should never happen (and it can only possibly happen $t-1$ times for
 $t$ threads) so we're in the clear.
 
 In any case, all that remains is to run each thread asynchronously in a Scala

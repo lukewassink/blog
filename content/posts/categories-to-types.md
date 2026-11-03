@@ -130,7 +130,7 @@ something for each set? Why not just the set itself? And what about morphisms?
 Let's do the same thing: the morphism itself. So $F(A) = A$ and $F(f) = f$ for
 all sets and all functions.  This is called the identity functor.
 
-Now something more interesting. Consider the functor $W$ that takes in a set and
+Now something more interesting. Consider the functor $F$ that takes in a set and
 returns that set wrapped in another set: $F(A) = \{A\}$. So:
 
 $$
@@ -141,7 +141,7 @@ F(\{1, 2\}) &= \{\{1, 2\}\}
 $$
 
 What should $F$ do to functions? A logical choice would be: just apply them to
-the wrapped set. So $F(f)(F(A)) = \{f(A)\}$.
+the element of the wrapped set. So $F(f)(F(A)) = \{f(A)\}$.
 
 Here's something interesting about both the functors we mentioned: they both map
 from the category of sets, *back to the category of sets*. Not all functors have
@@ -167,11 +167,11 @@ that!
 If this seems like a lot, there's no need to sweat the details in general
 (unless you want to, in which case go for it!). The situation in the category of
 sets, which is our focus, is much simpler. The monoidal product $\otimes$ is
-just the ordinary product: the set of all pairs of elements from the two sets.
+just the ordinary Cartesian product: the set of all pairs of elements from the two sets.
 For example:
 
 $$
-\{1, 2\} \times \{a, b, c\} = \{(1, a), (1, b), (2, a), (1, b), (2, b), (1, c), (2, c)\}
+\{1, 2\} \times \{a, b, c\} = \{(1, a), (2, a), (1, b), (2, b), (1, c), (2, c)\}
 $$
 
 For the identity object, just pick any set with one element. You get an
@@ -242,7 +242,7 @@ details. For now, we finally have everything we need for monads!
 
 Let's put the pieces together. A *monad* is a *monoid* in the category of
 *endofunctors*. Let $F$ be a monad. A monoid object needs two special morphisms.
-First, $\mu: F\times F\to F$. Second, $\eta: I\to F$. For endofunctors the
+First, $\mu: F\circ F\to F$. Second, $\eta: I\to F$. For endofunctors the
 product is just composition, morphisms are natural transformations, and the
 identity object is the identity functor, which we'll call $Id$. A natural
 transformation gives us a morphism for each object. So for each object $X$ we
@@ -256,7 +256,7 @@ $$
 $$
 
 where the second line follows from $Id(X) = X$. If the coherence conditions hold
-for $\mu$ and $\eta$, than $F$ is a monad! Let's take a brief detour, and then
+for $\mu$ and $\eta$, then $F$ is a monad! Let's take a brief detour, and then
 we can finally connect all this to programming.
 
 
@@ -338,7 +338,7 @@ val y: One = 2 // this throws a compiler error
 ```
 
 Types like these might seem strange, but if a type is just a set then there's
-not problem.
+no problem.
 
 It's important to note that this is only a model. Thinking of a type as a set
 captures something important about the type, but a type is not actually a set.
@@ -450,7 +450,7 @@ asking it to:
 It's disconcerting that this is out of reach when it seems so tantalizingly
 close. After all, `ListToVec` provides exactly the logic that `F` should need.
 The fact that implementing `F` is difficult at best even in Scala and impossible
-in main many mainstream statically typed languages, while being almost trivial
+in many mainstream statically typed languages, while being almost trivial
 in the category of sets, highlights a key point at which our model of types as
 sets breaks down.
 
@@ -477,7 +477,7 @@ describe a type `A` that has to be of the form `List[T]`? How do you extract
 
 A final important point about the set model: in category theory we often are
 interested in objects only up to isomorphism[^isomorphism]. In programming, we
-care what type something actually is, not what it's types isomorphism class is.
+care what type something actually is, not what its type's isomorphism class is.
 Consider `MyInt` from earlier. It may be isomorphic to `Int`, but that doesn't
 mean I'm allowed to pass it to a function that's looking for an `Int`. This is
 why we need things like traits and interfaces to convince Scala that two objects
@@ -519,7 +519,7 @@ the method for the job:
 ```scala
 List(List(1), List(2, 3)).flatten == List(1, 2, 3)
 ```
-and in fact this works! Once can check the coherence conditions and confirm that
+and in fact this works! One can check the coherence conditions and confirm that
 `List()` and `flatten` do indeed make `List` a monad.
 
 Our other monad types are similar:
@@ -645,7 +645,7 @@ pitfalls. We will create a class `Source` that contains a computation that
 returns a value:
 
 ```scala
-class DeferredSource(source: () => T):
+class Source[T](source: () => T):
   def map[S](f: T => S): Source[S] = Source(() => f(source()))
 
   def run: T = source()
@@ -660,7 +660,7 @@ To make `Source` a monad we also need to define `flatMap`. Here's the first
 thought you might come up with:
 
 ```scala
-def flatMap1[S](f: T => S): Source[S] = f(run)
+def flatMap1[S](f: T => Source[S]): Source[S] = f(run)
 ```
 
 The type signatures all work out. It seems to satisfy the coherence conditions.
@@ -712,7 +712,7 @@ and no error is thrown because we actually defer reading the path until we call
 `run`.
 
 Well, that's about it. It is often remarked that if you truly want to learn
-something, you should explain it. That has never been more true for me that in
+something, you should explain it. That has never been more true for me than in
 the writing of this post. It ballooned from my original plan for a brief
 description of the connection between categories and types, to over 6000 words.
 If you made it this far, thanks! I hope it was helpful!
@@ -729,7 +729,7 @@ material you can try to work through for yourself. It should fill in most of the
 gaps we passed over in the post. The steps are:
 
 1. Look up the definitions for
-   [catgory](https://en.wikipedia.org/wiki/Category_theory),
+   [category](https://en.wikipedia.org/wiki/Category_theory),
    [functor](https://en.wikipedia.org/wiki/Functor), [natural
    transformation](https://en.wikipedia.org/wiki/Natural_transformation),
    [monoidal category](https://en.wikipedia.org/wiki/Monoidal_category), and
@@ -746,7 +746,7 @@ gaps we passed over in the post. The steps are:
    what it should be—you'll need it to check the coherence conditions. If you get
    stuck, click below for the answer.
 {{< details summary="reveal answer" >}}
-Suppose $F, G, H, K$ are endofunctors with $\varphi:F\to G$ and $\varphi:H\to K$.
+Suppose $F, G, H, K$ are endofunctors with $\varphi:F\to G$ and $\psi:H\to K$.
 Let $X$ be an object. Then:
 
 $$
@@ -770,9 +770,9 @@ Now you can check the coherence conditions.
    reduce to:
    $$
    \begin{align*}
-   \mu_X\circ\eta_{F(X)} &= F \\
-   \mu_X\circ F(\eta_X) &= F \\
-   F(\mu_x) &= \mu_{F(X)}
+   \mu_X\circ\eta_{F(X)} &= id_{F(X)} \\
+   \mu_X\circ F(\eta_X) &= id_{F(X)} \\
+   \mu_X \circ F(\mu_x) &= \mu_X \circ \mu_{F(X)}
    \end{align*}
    $$
 

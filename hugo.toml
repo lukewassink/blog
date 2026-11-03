@@ -3,6 +3,12 @@ locale = 'en-us'
 title = 'Luke Wassink'
 defaultcontentlanguage = "en"
 
+newContentEditor = "vim"
+
+[security]
+  [security.exec]
+    allow = ['^dart-sass-embedded$', '^go$', '^npx$', '^postcss$', '^vim$']
+
 [module]
   [[module.imports]]
     path = 'github.com/luizdepra/hugo-coder'
